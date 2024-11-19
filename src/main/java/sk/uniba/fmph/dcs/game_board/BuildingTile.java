@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.OptionalInt;
 
 public class BuildingTile implements InterfaceFigureLocationInternal {
-    private Building building;
-    private ArrayList<PlayerOrder> figures;
+    private final Building building;
+    private final ArrayList<PlayerOrder> figures;
 
 
     public BuildingTile(Building building) {
@@ -43,11 +43,15 @@ public class BuildingTile implements InterfaceFigureLocationInternal {
     @Override
     public ActionResult makeAction(Player player, Effect[] inputResources, Effect[] outputResources) {
         OptionalInt points = building.build(List.of(inputResources));
+        if (tryToMakeAction(player) == HasAction.NO_ACTION_POSSIBLE)
+            return ActionResult.FAILURE;
         if (points.isEmpty()) {
             return ActionResult.FAILURE;
         }
-        // TODO: add points to player
+
+        player.playerBoard().addPoints(points.getAsInt());
         player.playerBoard().takeResources(inputResources);
+        figures.remove(player.playerOrder());
         return ActionResult.ACTION_DONE;
     }
 
@@ -66,7 +70,6 @@ public class BuildingTile implements InterfaceFigureLocationInternal {
 
     @Override
     public boolean newTurn() {
-        figures.clear();
-        return true;
+        return false;
     }
 }

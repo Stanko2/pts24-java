@@ -1,6 +1,8 @@
 package sk.uniba.fmph.dcs.game_board;
 
 import org.junit.Test;
+import sk.uniba.fmph.dcs.player_board.PlayerBoard;
+import sk.uniba.fmph.dcs.player_board.PlayerBoardGameBoardFacade;
 import sk.uniba.fmph.dcs.stone_age.*;
 
 import java.util.ArrayList;
@@ -31,8 +33,8 @@ public class BuildingTileTest {
         var resources = new ArrayList<Effect>();
         resources.add(Effect.WOOD);
         var t = new BuildingTile(new SimpleBuilding(resources));
-        Player player1 = new Player(new PlayerOrder(1, 1), null);
-        Player player2 = new Player(new PlayerOrder(2, 2), null);
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
+        Player player2 = new Player(new PlayerOrder(2, 2), new PlayerBoardGameBoardFacade(new PlayerBoard()));
         t.placeFigures(player1, 1);
         var ret = t.makeAction(player2, new Effect[]{Effect.WOOD}, new Effect[]{});
         assertEquals(ret, ActionResult.FAILURE);

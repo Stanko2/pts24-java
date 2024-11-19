@@ -157,6 +157,11 @@ public class PlayerBoardGameBoardFacade implements InterfaceFeedTribe, Interface
         return this.playerBoard.getPlayerFigures().hasFigures(count);
     }
 
+    @Override
+    public void addPoints(int points) {
+        this.playerBoard.addPoints(points);
+    }
+
     /**
      * Checks if the player has sufficient tools to meet the specified goal.
      *
