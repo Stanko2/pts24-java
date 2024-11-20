@@ -118,4 +118,13 @@ public class PlaceOnToolMakerAdaptor implements InterfaceFigureLocationInternal 
     public boolean newTurn() {
         return false;
     }
+
+
+    /**
+     * @return state of tools
+     */
+    @Override
+    public String state() {
+        return tools.state();
+    }
 }

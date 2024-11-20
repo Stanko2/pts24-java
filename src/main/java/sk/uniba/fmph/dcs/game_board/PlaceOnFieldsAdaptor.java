@@ -118,4 +118,13 @@ public class PlaceOnFieldsAdaptor implements InterfaceFigureLocationInternal {
     public boolean newTurn() {
         return false;
     }
+
+
+    /**
+     * @return state of fields
+     */
+    @Override
+    public String state() {
+        return fields.state();
+    }
 }
