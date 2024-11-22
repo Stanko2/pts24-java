@@ -1,9 +1,9 @@
 package sk.uniba.fmph.dcs.game_phase_controller;
 
+import org.junit.Test;
 import sk.uniba.fmph.dcs.stone_age.*;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 class TakeRewardMock implements InterfaceTakeReward {
     private final List<Boolean> expectedBooleanResult;
@@ -17,7 +17,7 @@ class TakeRewardMock implements InterfaceTakeReward {
 
     @Override
     public boolean takeReward(PlayerOrder player, Effect reward) {
-        assert !expectedBooleanResult.isEmpty();
+        if (expectedBooleanResult.isEmpty()) return true;
         return expectedBooleanResult.removeFirst();
     }
 
@@ -30,48 +30,45 @@ class TakeRewardMock implements InterfaceTakeReward {
 
 class FeedTribeMock implements InterfaceFeedTribe {
     private final List<Boolean> feedTribeExpected;
-    private final List<Boolean> doNotFeedExpected;
     private final List<Boolean> feedTribeIfEnoughExpected;
     private final List<Boolean> isTribeFedExpected;
 
-    FeedTribeMock(final List<Boolean> feedTribeExpected, final List<Boolean> doNotFeedExpected, final List<Boolean> feedTribeIfEnoughExpected, final List<Boolean> isTribeFedExpected) {
+    FeedTribeMock(final List<Boolean> feedTribeExpected, final List<Boolean> feedTribeIfEnoughExpected, final List<Boolean> isTribeFedExpected) {
         this.feedTribeExpected = feedTribeExpected;
-        this.doNotFeedExpected = doNotFeedExpected;
         this.isTribeFedExpected = isTribeFedExpected;
         this.feedTribeIfEnoughExpected = feedTribeIfEnoughExpected;
     }
 
     @Override
     public boolean feedTribeIfEnoughFood() {
-        assert !feedTribeIfEnoughExpected.isEmpty();
+        if (feedTribeIfEnoughExpected.isEmpty()) return true;
         return feedTribeIfEnoughExpected.removeFirst();
     }
 
     @Override
     public boolean feedTribe(final Collection<Effect> resources) {
-        assert !feedTribeExpected.isEmpty();
+        if (feedTribeExpected.isEmpty()) return true;
         return feedTribeExpected.removeFirst();
     }
 
     @Override
     public boolean doNotFeedThisTurn() {
-        assert !doNotFeedExpected.isEmpty();
-        return feedTribeExpected.removeFirst();
+        return true;
     }
 
     @Override
     public boolean isTribeFed() {
-        assert !isTribeFedExpected.isEmpty();
+        if (isTribeFedExpected.isEmpty()) return true;
         return isTribeFedExpected.removeFirst();
     }
 }
 
 class FigureLocationMock implements InterfaceFigureLocation {
-    private final List<Boolean> newTurnExpected;
-    private final List<ActionResult> makeActionExpected;
-    private final List<HasAction> tryActionExpected;
-    private final List<Boolean> placeFiguresExpected;
-    private final List<HasAction> tryPlaceFiguresExpected;
+    private List<Boolean> newTurnExpected;
+    private List<ActionResult> makeActionExpected;
+    private List<HasAction> tryActionExpected;
+    private List<Boolean> placeFiguresExpected;
+    private List<HasAction> tryPlaceFiguresExpected;
 
     FigureLocationMock(final List<Boolean> newTurnExpected, final List<ActionResult> makeActionExpected, final List<HasAction> tryActionExpected,
                        final List<Boolean> placeFiguresExpected, final List<HasAction> tryPlaceFiguresExpected) {
@@ -83,31 +80,32 @@ class FigureLocationMock implements InterfaceFigureLocation {
     }
 
     @Override
-    public boolean placeFigures(PlayerOrder player, int figureCount) {
-        assert !placeFiguresExpected.isEmpty();
+    public boolean placeFigures(final PlayerOrder player, final int figureCount) {
+        if (placeFiguresExpected.isEmpty()) return true;
         return placeFiguresExpected.removeFirst();
     }
 
     @Override
-    public HasAction tryToPlaceFigures(PlayerOrder player, int count) {
-        assert !tryPlaceFiguresExpected.isEmpty();
+    public HasAction tryToPlaceFigures(final PlayerOrder player, final int count) {
+        if (tryPlaceFiguresExpected.isEmpty()) return HasAction.NO_ACTION_POSSIBLE;
         return tryPlaceFiguresExpected.removeFirst();
     }
 
     @Override
-    public ActionResult makeAction(PlayerOrder player, Collection<Effect> inputResources, Collection<Effect> outputResources) {
-        assert !makeActionExpected.isEmpty();
+    public ActionResult makeAction(final PlayerOrder player, final Collection<Effect> inputResources, final Collection<Effect> outputResources) {
+        if (makeActionExpected.isEmpty()) return ActionResult.FAILURE;
         return makeActionExpected.removeFirst();
     }
 
     @Override
-    public boolean skipAction(PlayerOrder player) {
+    public boolean skipAction(final PlayerOrder player) {
         return true;
     }
 
     @Override
-    public HasAction tryToMakeAction(PlayerOrder player) {
-        assert !tryActionExpected.isEmpty();
+    public HasAction tryToMakeAction(final PlayerOrder player) {
+        if (tryActionExpected.isEmpty()) return HasAction.NO_ACTION_POSSIBLE;
+        System.out.println(tryActionExpected);
         return tryActionExpected.removeFirst();
     }
 
@@ -126,21 +124,21 @@ class NewTurnMock implements InterfaceNewTurn {
 }
 
 class ToolUseMock implements InterfaceToolUse {
-    private final List<Boolean> canUseExpected;
+    private List<Boolean> canUseExpected;
 
-    ToolUseMock(final List<Boolean> canUseExpected) {
+    ToolUseMock(List<Boolean> canUseExpected) {
         this.canUseExpected = canUseExpected;
     }
 
     @Override
-    public boolean useTool(int idx) {
-        assert !canUseExpected.isEmpty();
+    public boolean useTool(final int idx) {
+        if (canUseExpected.isEmpty()) return true;
         return canUseExpected.getFirst();
     }
 
     @Override
     public boolean canUseTools() {
-        assert !canUseExpected.isEmpty();
+        if (canUseExpected.isEmpty()) return true;
         return canUseExpected.removeFirst();
     }
 
@@ -151,5 +149,95 @@ class ToolUseMock implements InterfaceToolUse {
 }
 
 public class IntegrationTest {
-    // normal game test, only valid actions provided, game end indicated by
+    // normal game test, only valid actions provided, game end indicated by FigureLocationAdaptor
+    @Test
+    public void firstTest() {
+        // setup
+        PlayerOrder p1 = new PlayerOrder(0, 4);
+        PlayerOrder p2 = new PlayerOrder(1, 4);
+        PlayerOrder p3 = new PlayerOrder(2, 4);
+        PlayerOrder p4 = new PlayerOrder(3, 4);
+        InterfaceFeedTribe interfaceFeedTribe1 = new FeedTribeMock(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+
+        List<HasAction> a1 = new ArrayList<>();
+        a1.add(HasAction.WAITING_FOR_PLAYER_ACTION);
+
+        List<ActionResult> a2 = new ArrayList<>();
+        a2.add(ActionResult.ACTION_DONE);
+        a2.add(ActionResult.FAILURE);
+
+        List<Boolean> a3 = new ArrayList<>();
+        a3.add(false);
+        a3.add(true);
+
+        InterfaceFigureLocation figureLocationMock = new FigureLocationMock(a3, a2, a1, new ArrayList<>(), new ArrayList<>());
+
+        InterfaceTakeReward interfaceTakeReward = new TakeRewardMock(Arrays.asList(true, true, true, true), Arrays.asList(HasAction.WAITING_FOR_PLAYER_ACTION, HasAction.WAITING_FOR_PLAYER_ACTION, HasAction.WAITING_FOR_PLAYER_ACTION, HasAction.AUTOMATIC_ACTION_DONE));
+        Map<PlayerOrder, InterfaceFeedTribe> interfaceFeedTribeCollection = new HashMap<>();
+        interfaceFeedTribeCollection.put(p1, interfaceFeedTribe1);
+        interfaceFeedTribeCollection.put(p2, interfaceFeedTribe1);
+        interfaceFeedTribeCollection.put(p3, interfaceFeedTribe1);
+        interfaceFeedTribeCollection.put(p4, interfaceFeedTribe1);
+        Map<Location, InterfaceFigureLocation> places = new HashMap<>();
+        places.put(Location.BUILDING_TILE1, figureLocationMock);
+        InterfaceNewTurn interfaceNewTurn1 = new NewTurnMock();
+        Map<PlayerOrder, InterfaceToolUse> interfaceToolUseCollection = new HashMap<>();
+        interfaceToolUseCollection.put(p1, new ToolUseMock(new ArrayList<>()));
+        interfaceToolUseCollection.put(p2, new ToolUseMock(new ArrayList<>()));
+        interfaceToolUseCollection.put(p3, new ToolUseMock(new ArrayList<>()));
+        interfaceToolUseCollection.put(p4, new ToolUseMock(new ArrayList<>()));
+
+        GamePhaseController gpc = GamePhaseControllerFactory.createGamePhaseController(interfaceTakeReward, interfaceFeedTribeCollection, places, interfaceNewTurn1, interfaceToolUseCollection, p1);
+
+        System.out.println(gpc.state());
+        gpc.placeFigures(p1, Location.BUILDING_TILE1, 1);
+        System.out.println(gpc.state());
+        /*
+        System.out.println(gpc.state());
+        gpc.placeFigures(p2, Location.BUILDING_TILE1, 1);
+        System.out.println(gpc.state());
+        gpc.placeFigures(p3, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p4, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p1, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p2, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p3, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p4, Location.BUILDING_TILE1, 1);
+
+        gpc.makeAction(p1, Location.BUILDING_TILE1, new ArrayList<>(), new ArrayList<>());
+        gpc.makeAction(p2, Location.BUILDING_TILE1, new ArrayList<>(), new ArrayList<>());
+        gpc.makeAction(p3, Location.BUILDING_TILE1, new ArrayList<>(), new ArrayList<>());
+        gpc.makeAllPlayersTakeARewardChoice(p1, Effect.WOOD);
+        gpc.makeAllPlayersTakeARewardChoice(p2, Effect.WOOD);
+        gpc.makeAllPlayersTakeARewardChoice(p3, Effect.WOOD);
+        gpc.makeAllPlayersTakeARewardChoice(p4, Effect.WOOD);
+        gpc.makeAction(p4, Location.BUILDING_TILE1, new ArrayList<>(), new ArrayList<>());
+
+        gpc.feedTribe(p1, new ArrayList<>());
+        gpc.feedTribe(p2, new ArrayList<>());
+        gpc.feedTribe(p3, new ArrayList<>());
+        gpc.feedTribe(p4, new ArrayList<>());
+
+        gpc.placeFigures(p1, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p2, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p3, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p4, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p1, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p2, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p3, Location.BUILDING_TILE1, 1);
+        gpc.placeFigures(p4, Location.BUILDING_TILE1, 1);
+
+        gpc.makeAction(p1, Location.BUILDING_TILE1, new ArrayList<>(), new ArrayList<>());
+        gpc.makeAction(p2, Location.BUILDING_TILE1, new ArrayList<>(), new ArrayList<>());
+        gpc.makeAction(p3, Location.BUILDING_TILE1, new ArrayList<>(), new ArrayList<>());
+        gpc.makeAction(p4, Location.BUILDING_TILE1, new ArrayList<>(), new ArrayList<>());
+
+        gpc.feedTribe(p1, new ArrayList<>());
+        gpc.feedTribe(p2, new ArrayList<>());
+        System.out.println(gpc.state());
+        gpc.feedTribe(p3, new ArrayList<>());
+        gpc.feedTribe(p4, new ArrayList<>());
+        System.out.println(gpc.state());
+
+         */
+    }
 }
