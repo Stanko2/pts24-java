@@ -17,15 +17,15 @@ public final class GamePhaseControllerFactory {
     }
 
     public static GamePhaseController createGamePhaseController(final InterfaceTakeReward interfaceTakeReward,
-            final Map<PlayerOrder, InterfaceFeedTribe> interfaceFeedTribeCollection,
-            final Map<Location, InterfaceFigureLocation> places, final InterfaceNewTurn interfaceNewTurn,
-            final Map<PlayerOrder, InterfaceToolUse> interfaceToolUseCollection, final PlayerOrder startingPlayer) {
+                                                                final Map<PlayerOrder, InterfaceFeedTribe> interfaceFeedTribeCollection,
+                                                                final Map<Location, InterfaceFigureLocation> places, final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBordMap,
+                                                                final Map<PlayerOrder, InterfaceToolUse> interfaceToolUseCollection, final PlayerOrder startingPlayer) {
         InterfaceGamePhaseState allPlayersTakeARewardState = new AllPlayersTakeARewardState(interfaceTakeReward);
         InterfaceGamePhaseState feedTribeState = new FeedTribeState(interfaceFeedTribeCollection);
         InterfaceGamePhaseState gameEndState = new GameEndState();
         InterfaceGamePhaseState makeActionState = new MakeActionState(places);
         InterfaceGamePhaseState newRoundState = new NewRoundState(
-                places.values().toArray(new InterfaceFigureLocation[0]), interfaceNewTurn);
+                places.values().toArray(new InterfaceFigureLocation[0]), playerPlayerBordMap);
         InterfaceGamePhaseState placeFigureState = new PlaceFigureState(places);
         InterfaceGamePhaseState waitingForToolUse = new WaitingForToolUse(interfaceToolUseCollection);
         Map<GamePhase, InterfaceGamePhaseState> dispatchers = new HashMap<>();
