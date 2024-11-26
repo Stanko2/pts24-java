@@ -13,10 +13,10 @@ import java.util.Map;
 
 public final class NewRoundState implements InterfaceGamePhaseState {
     private final InterfaceFigureLocation[] places;
-    private PlayerOrder lastInitialization = null;
     private final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBordMap;
 
-    public NewRoundState(final InterfaceFigureLocation[] places, final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBordMap) {
+    public NewRoundState(final InterfaceFigureLocation[] places,
+                         final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBordMap) {
         this.places = places;
         this.playerPlayerBordMap = playerPlayerBordMap;
     }
@@ -27,7 +27,8 @@ public final class NewRoundState implements InterfaceGamePhaseState {
     }
 
     @Override
-    public ActionResult makeAction(final PlayerOrder player, final Location location, final Collection<Effect> inputResources, final Collection<Effect> outputResources) {
+    public ActionResult makeAction(final PlayerOrder player, final Location location,
+                                   final Collection<Effect> inputResources, final Collection<Effect> outputResources) {
         return ActionResult.FAILURE;
     }
 
@@ -69,12 +70,10 @@ public final class NewRoundState implements InterfaceGamePhaseState {
                 return HasAction.NO_ACTION_POSSIBLE;
             }
         }
-        // initialize new round on PlayerBoard of given player
-        if (lastInitialization == player || !playerPlayerBordMap.containsKey(player)) {
-            return HasAction.NO_ACTION_POSSIBLE;
+
+        for (InterfaceNewTurn i : playerPlayerBordMap.values()) {
+            i.newTurn();
         }
-        playerPlayerBordMap.get(player).newTurn();
-        lastInitialization = player;
         return HasAction.AUTOMATIC_ACTION_DONE;
     }
 }
