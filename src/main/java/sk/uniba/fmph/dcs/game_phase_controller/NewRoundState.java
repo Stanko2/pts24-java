@@ -13,12 +13,12 @@ import java.util.Map;
 
 public final class NewRoundState implements InterfaceGamePhaseState {
     private final InterfaceFigureLocation[] places;
-    private final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBordMap;
+    private final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBoardMap;
 
     public NewRoundState(final InterfaceFigureLocation[] places,
-                         final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBordMap) {
+                         final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBoardMap) {
         this.places = places;
-        this.playerPlayerBordMap = playerPlayerBordMap;
+        this.playerPlayerBoardMap = playerPlayerBoardMap;
     }
 
     @Override
@@ -71,7 +71,7 @@ public final class NewRoundState implements InterfaceGamePhaseState {
             }
         }
 
-        for (InterfaceNewTurn i : playerPlayerBordMap.values()) {
+        for (InterfaceNewTurn i : playerPlayerBoardMap.values()) {
             i.newTurn();
         }
         return HasAction.AUTOMATIC_ACTION_DONE;
