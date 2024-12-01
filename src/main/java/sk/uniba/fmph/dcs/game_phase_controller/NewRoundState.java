@@ -9,14 +9,16 @@ import sk.uniba.fmph.dcs.stone_age.InterfaceNewTurn;
 import sk.uniba.fmph.dcs.stone_age.InterfaceFigureLocation;
 
 import java.util.Collection;
+import java.util.Map;
 
 public final class NewRoundState implements InterfaceGamePhaseState {
     private final InterfaceFigureLocation[] places;
-    private final InterfaceNewTurn interfaceNewTurn;
+    private final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBoardMap;
 
-    public NewRoundState(final InterfaceFigureLocation[] places, final InterfaceNewTurn interfaceNewTurn) {
+    public NewRoundState(final InterfaceFigureLocation[] places,
+                         final Map<PlayerOrder, InterfaceNewTurn> playerPlayerBoardMap) {
         this.places = places;
-        this.interfaceNewTurn = interfaceNewTurn;
+        this.playerPlayerBoardMap = playerPlayerBoardMap;
     }
 
     @Override
@@ -25,7 +27,8 @@ public final class NewRoundState implements InterfaceGamePhaseState {
     }
 
     @Override
-    public ActionResult makeAction(final PlayerOrder player, final Location location, final Collection<Effect> inputResources, final Collection<Effect> outputResources) {
+    public ActionResult makeAction(final PlayerOrder player, final Location location,
+                                   final Collection<Effect> inputResources, final Collection<Effect> outputResources) {
         return ActionResult.FAILURE;
     }
 
@@ -61,12 +64,16 @@ public final class NewRoundState implements InterfaceGamePhaseState {
 
     @Override
     public HasAction tryToMakeAutomaticAction(final PlayerOrder player) {
+        // returns NO_ACTION_POSSIBLE if any of InterfaceFigureLocations indicates end of game
         for (InterfaceFigureLocation location : places) {
             if (location.newTurn()) {
                 return HasAction.NO_ACTION_POSSIBLE;
             }
         }
-        interfaceNewTurn.newTurn();
+
+        for (InterfaceNewTurn i : playerPlayerBoardMap.values()) {
+            i.newTurn();
+        }
         return HasAction.AUTOMATIC_ACTION_DONE;
     }
 }
