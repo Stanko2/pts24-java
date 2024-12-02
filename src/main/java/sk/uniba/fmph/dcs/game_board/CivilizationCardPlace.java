@@ -1,50 +1,116 @@
 package sk.uniba.fmph.dcs.game_board;
 
-import sk.uniba.fmph.dcs.stone_age.CivilisationCard;
-import sk.uniba.fmph.dcs.stone_age.PlayerOrder;
-import sk.uniba.fmph.dcs.stone_age.Effect;
-import sk.uniba.fmph.dcs.stone_age.ActionResult;
-import sk.uniba.fmph.dcs.stone_age.HasAction;
+import org.json.JSONObject;
+import sk.uniba.fmph.dcs.stone_age.*;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
     private int requiredResources;
     private CivilisationCard card;
-    private ArrayList<PlayerOrder> figures;
+    private PlayerOrder figure;
+    private final CivilizationCardDeck deck;
+
+    public CivilizationCardPlace(CivilizationCardDeck deck) {
+        this.deck = deck;
+    }
+
 
     @Override
     public boolean placeFigures(final Player player, final int figureCount) {
-        return false;
+        if (figure != null) {
+            return false;
+        }
+        figure = player.playerOrder();
+        return true;
     }
 
     @Override
     public HasAction tryToPlaceFigures(final Player player, final int count) {
-        return null;
+        if (figure != null) {
+            return HasAction.NO_ACTION_POSSIBLE;
+        }
+        return HasAction.WAITING_FOR_PLAYER_ACTION;
+    }
+
+    private EvaluateCivilisationCardImmediateEffect getEffect(ImmediateEffect effect) {
+        switch (effect) {
+            case WOOD -> {
+                return new GetSomethingFixed(List.of(Effect.WOOD));
+            }
+            case CLAY -> {
+                return new GetSomethingFixed(List.of(Effect.CLAY));
+            }
+            case STONE -> {
+                return new GetSomethingFixed(List.of(Effect.STONE));
+            }
+            case GOLD -> {
+                return new GetSomethingFixed(List.of(Effect.GOLD));
+            }
+            case FOOD -> {
+                return new GetSomethingFixed(List.of(Effect.FOOD));
+            }
+            case CARD -> {
+                return new GetCard(deck);
+            }
+            case THROW_CLAY -> {
+                return new GetSomethingThrow(Effect.CLAY);
+            }
+            case THROW_GOLD -> {
+                return new GetSomethingThrow(Effect.GOLD);
+            }
+            case THROW_STONE -> {
+                return new GetSomethingThrow(Effect.STONE);
+            }
+            case THROW_WOOD -> {
+                return new GetSomethingThrow(Effect.WOOD);
+            }
+        }
     }
 
     @Override
     public ActionResult makeAction(final Player player, final Effect[] inputResources, final Effect[] outputResources) {
-        return null;
+        if(!player.playerBoard().takeResources(inputResources)) {
+            return ActionResult.FAILURE;
+        }
+        player.playerBoard().giveEndOfGameEffect(card.endOfGameEffect());
+        for (var effect : card.immediateEffect()) {
+            var x = getEffect(effect);
+            x.performEffect(player, null);
+        }
+        figure = null;
+
+        var x = deck.getTop();
+        if(!x.isEmpty()) {
+            card = x.get();
+        }
+        return ActionResult.ACTION_DONE;
     }
 
     @Override
     public boolean skipAction(final Player player) {
-        return false;
+        figure = null;
+        return true;
     }
 
     @Override
     public HasAction tryToMakeAction(final Player player) {
-        return null;
+        if (player.playerOrder() != figure) {
+            return HasAction.NO_ACTION_POSSIBLE;
+        }
+
+        return HasAction.WAITING_FOR_PLAYER_ACTION;
     }
 
     @Override
     public boolean newTurn() {
-        return false;
+        return figure != null;
     }
 
     @Override
     public String state() {
-        return "";
+        return new JSONObject().toString();
     }
 }

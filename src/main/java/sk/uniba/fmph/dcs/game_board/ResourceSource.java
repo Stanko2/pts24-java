@@ -1,24 +1,26 @@
 package sk.uniba.fmph.dcs.game_board;
 
+import org.json.JSONObject;
 import sk.uniba.fmph.dcs.stone_age.ActionResult;
 import sk.uniba.fmph.dcs.stone_age.Effect;
 import sk.uniba.fmph.dcs.stone_age.HasAction;
 import sk.uniba.fmph.dcs.stone_age.PlayerOrder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ResourceSource implements InterfaceFigureLocationInternal {
     private String name;
     private final Effect resource;
-    private int count;
-    private int maxFigures;
-    private int maxFigureColors;
-    private ArrayList<PlayerOrder> figures;
+    private int players;
+    private Map<PlayerOrder, Integer> figures;
+    private static Map<Effect, Integer> MULTIPLIERS = Map.of(Effect.WOOD, 3, Effect.CLAY, 4, Effect.STONE, 5, Effect.GOLD, 6);
 
-    public ResourceSource(Effect resource, int count) {
-
+    public ResourceSource(Effect resource, int playerCount) {
         this.resource = resource;
-        this.count = count;
+        this.players = playerCount;
+        figures = new HashMap<>();
     }
 
     @Override
@@ -28,22 +30,43 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
 
     @Override
     public HasAction tryToPlaceFigures(Player player, int count) {
-        return null;
+        if (figures.size() + count >= 7) {
+            return HasAction.NO_ACTION_POSSIBLE;
+        }
+        figures.put(player.playerOrder(), count);
+        return HasAction.WAITING_FOR_PLAYER_ACTION;
     }
 
     @Override
     public ActionResult makeAction(Player player, Effect[] inputResources, Effect[] outputResources) {
-        return null;
+        if (tryToMakeAction(player) == HasAction.NO_ACTION_POSSIBLE) {
+            return ActionResult.FAILURE;
+        }
+        return ActionResult.ACTION_DONE_WAIT_FOR_TOOL_USE;
     }
 
     @Override
     public boolean skipAction(Player player) {
-        return false;
+        figures.remove(player.playerOrder());
+        return true;
     }
 
     @Override
     public HasAction tryToMakeAction(Player player) {
-        return null;
+        var c = CurrentThrow.initiate(player, resource, figures.get(player.playerOrder()));
+        if (!c.canUseTools()) {
+            int count = c.getResult() / MULTIPLIERS.get(resource);
+            for (int i = 0; i < count; i++) {
+                player.playerBoard().giveEffect(new Effect[]{ resource });
+            }
+            return HasAction.AUTOMATIC_ACTION_DONE;
+        }
+
+        if (!figures.containsKey(player.playerOrder())) {
+            return HasAction.NO_ACTION_POSSIBLE;
+        }
+
+        return HasAction.WAITING_FOR_PLAYER_ACTION;
     }
 
     @Override
@@ -53,6 +76,7 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
 
     @Override
     public String state() {
-        return "";
+
+        return new JSONObject().toString();
     }
 }
