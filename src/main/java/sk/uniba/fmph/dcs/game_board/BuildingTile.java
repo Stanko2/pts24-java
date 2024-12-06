@@ -100,10 +100,7 @@ public final class BuildingTile implements InterfaceFigureLocationInternal {
 
     /**
      * @brief determines if player can make action on this tile
-     *
-     * @param player
-     *            player from query
-     *
+     * @param player player from query
      * @return
      */
     @Override
