@@ -6,7 +6,6 @@ import sk.uniba.fmph.dcs.stone_age.Effect;
 import sk.uniba.fmph.dcs.stone_age.HasAction;
 import sk.uniba.fmph.dcs.stone_age.PlayerOrder;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,9 +14,10 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
     private final Effect resource;
     private int players;
     private Map<PlayerOrder, Integer> figures;
-    private static Map<Effect, Integer> MULTIPLIERS = Map.of(Effect.WOOD, 3, Effect.CLAY, 4, Effect.STONE, 5, Effect.GOLD, 6);
+    private static final Map<Effect, Integer> MULTIPLIERS = Map.of(Effect.WOOD, 3, Effect.CLAY, 4, Effect.STONE, 5, Effect.GOLD, 6);
+    private static final int CAPACITY = 7;
 
-    public ResourceSource(Effect resource, int playerCount) {
+    public ResourceSource(final Effect resource, final int playerCount) {
         this.resource = resource;
         this.players = playerCount;
         figures = new HashMap<>();
@@ -32,7 +32,7 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
      * @return TODO
      */
     @Override
-    public boolean placeFigures(Player player, int figureCount) {
+    public boolean placeFigures(final Player player, final int figureCount) {
         return false;
     }
 
@@ -45,8 +45,8 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
      * @return TODO
      */
     @Override
-    public HasAction tryToPlaceFigures(Player player, int count) {
-        if (figures.size() + count >= 7) {
+    public HasAction tryToPlaceFigures(final Player player, final int count) {
+        if (figures.size() + count >= CAPACITY) {
             return HasAction.NO_ACTION_POSSIBLE;
         }
         figures.put(player.playerOrder(), count);
@@ -63,7 +63,7 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
      * @return TODO
      */
     @Override
-    public ActionResult makeAction(Player player, Effect[] inputResources, Effect[] outputResources) {
+    public ActionResult makeAction(final Player player, final Effect[] inputResources, final Effect[] outputResources) {
         if (tryToMakeAction(player) == HasAction.NO_ACTION_POSSIBLE) {
             return ActionResult.FAILURE;
         }
@@ -78,7 +78,7 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
      * @return TODO
      */
     @Override
-    public boolean skipAction(Player player) {
+    public boolean skipAction(final Player player) {
         figures.remove(player.playerOrder());
         return true;
     }
@@ -91,12 +91,12 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
      * @return TODO
      */
     @Override
-    public HasAction tryToMakeAction(Player player) {
+    public HasAction tryToMakeAction(final Player player) {
         var c = CurrentThrow.initiate(player, resource, figures.get(player.playerOrder()));
         if (!c.canUseTools()) {
             int count = c.getResult() / MULTIPLIERS.get(resource);
             for (int i = 0; i < count; i++) {
-                player.playerBoard().giveEffect(new Effect[]{ resource });
+                player.playerBoard().giveEffect(new Effect[] {resource});
             }
             return HasAction.AUTOMATIC_ACTION_DONE;
         }

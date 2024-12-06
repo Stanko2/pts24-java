@@ -8,14 +8,14 @@ import java.util.*;
 public final class CivilizationCardDeck {
     private Queue<CivilisationCard> queue;
 
-    public CivilizationCardDeck(ArrayList<CivilisationCard> cards) {
+    public CivilizationCardDeck(final ArrayList<CivilisationCard> cards) {
         Collections.shuffle(cards);
         for (var c : cards) {
             queue.add(c);
         }
     }
 
-    public Optional<CivilisationCard> getTop(){
+    public Optional<CivilisationCard> getTop() {
         if (queue.isEmpty()) {
             return Optional.empty();
         }

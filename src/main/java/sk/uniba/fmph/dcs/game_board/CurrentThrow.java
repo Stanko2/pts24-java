@@ -1,8 +1,6 @@
 package sk.uniba.fmph.dcs.game_board;
 
-import com.sun.management.HotSpotDiagnosticMXBean;
 import sk.uniba.fmph.dcs.stone_age.Effect;
-import sk.uniba.fmph.dcs.stone_age.HasAction;
 import sk.uniba.fmph.dcs.stone_age.InterfaceToolUse;
 
 import java.util.Optional;
@@ -13,7 +11,7 @@ public final class CurrentThrow implements InterfaceToolUse {
     private final Effect throwsFor;
     private boolean finalized = false;
 
-    private CurrentThrow(final Effect throwsFor, final int throwResult, Player player) {
+    private CurrentThrow(final Effect throwsFor, final int throwResult, final Player player) {
         this.throwsFor = throwsFor;
         this.player = player;
     }
@@ -33,7 +31,7 @@ public final class CurrentThrow implements InterfaceToolUse {
             throw new RuntimeException();
         }
         Optional<Integer> s = player.playerBoard().useTool(idx);
-        if(!s.isEmpty()) {
+        if (!s.isEmpty()) {
             result += s.get();
         }
         return !s.isEmpty();

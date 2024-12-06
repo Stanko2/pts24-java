@@ -3,11 +3,7 @@ package sk.uniba.fmph.dcs.game_board;
 import org.json.JSONObject;
 import sk.uniba.fmph.dcs.stone_age.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import static sk.uniba.fmph.dcs.stone_age.ImmediateEffect.*;
-
 
 public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
     private int requiredResources;
@@ -15,7 +11,7 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
     private PlayerOrder figure;
     private final CivilizationCardDeck deck;
 
-    public CivilizationCardPlace(CivilizationCardDeck deck) {
+    public CivilizationCardPlace(final CivilizationCardDeck deck) {
         this.deck = deck;
     }
 
@@ -46,45 +42,6 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
      */
     @Override
     public HasAction tryToPlaceFigures(final Player player, final int count) {
-        if (figure != null) {
-            return HasAction.NO_ACTION_POSSIBLE;
-        }
-        return HasAction.WAITING_FOR_PLAYER_ACTION;
-    }
-
-    private EvaluateCivilisationCardImmediateEffect getEffect(ImmediateEffect effect) {
-        switch (effect) {
-            case WOOD -> {
-                return new GetSomethingFixed(List.of(Effect.WOOD));
-            }
-            case CLAY -> {
-                return new GetSomethingFixed(List.of(Effect.CLAY));
-            }
-            case STONE -> {
-                return new GetSomethingFixed(List.of(Effect.STONE));
-            }
-            case GOLD -> {
-                return new GetSomethingFixed(List.of(Effect.GOLD));
-            }
-            case FOOD -> {
-                return new GetSomethingFixed(List.of(Effect.FOOD));
-            }
-            case CARD -> {
-                return new GetCard(deck);
-            }
-            case THROW_CLAY -> {
-                return new GetSomethingThrow(Effect.CLAY);
-            }
-            case THROW_GOLD -> {
-                return new GetSomethingThrow(Effect.GOLD);
-            }
-            case THROW_STONE -> {
-                return new GetSomethingThrow(Effect.STONE);
-            }
-            case THROW_WOOD -> {
-                return new GetSomethingThrow(Effect.WOOD);
-            }
-        }
         if (figure != null) {
             return HasAction.NO_ACTION_POSSIBLE;
         }
@@ -140,7 +97,7 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
      */
     @Override
     public ActionResult makeAction(final Player player, final Effect[] inputResources, final Effect[] outputResources) {
-        if(!player.playerBoard().takeResources(inputResources)) {
+        if (!player.playerBoard().takeResources(inputResources)) {
             return ActionResult.FAILURE;
         }
         player.playerBoard().giveEndOfGameEffect(card.endOfGameEffect());
@@ -151,7 +108,7 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
         figure = null;
 
         var x = deck.getTop();
-        if(!x.isEmpty()) {
+        if (!x.isEmpty()) {
             card = x.get();
         }
         return ActionResult.ACTION_DONE;
