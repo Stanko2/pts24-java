@@ -14,6 +14,7 @@ public final class CurrentThrow implements InterfaceToolUse {
     private CurrentThrow(final Effect throwsFor, final int throwResult, final Player player) {
         this.throwsFor = throwsFor;
         this.player = player;
+        this.result = throwResult;
     }
 
     public static CurrentThrow initiate(final Player player, final Effect effect, final int dices) {

@@ -24,25 +24,25 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
     }
 
     /**
-     * TODO.
+     * Places figures onto a resourceSource
      *
-     * @param player
-     * @param figureCount
+     * @param player player that places figures
+     * @param figureCount count of figures
      *
-     * @return TODO
+     * @return if the placement was successful
      */
     @Override
     public boolean placeFigures(final Player player, final int figureCount) {
-        return false;
+        return tryToPlaceFigures(player, figureCount) != HasAction.NO_ACTION_POSSIBLE;
     }
 
     /**
-     * TODO.
+     * Tries to place figures onto a resourceSource
      *
-     * @param player
-     * @param count
+     * @param player player that places figures
+     * @param count count of figures
      *
-     * @return TODO
+     * @return if the figures could be placed
      */
     @Override
     public HasAction tryToPlaceFigures(final Player player, final int count) {
@@ -54,13 +54,13 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
     }
 
     /**
-     * TODO.
+     * Claims a resource for player
      *
-     * @param player
-     * @param inputResources
-     * @param outputResources
+     * @param player player on turn
+     * @param inputResources unused
+     * @param outputResources unused
      *
-     * @return TODO
+     * @return if the action was successful
      */
     @Override
     public ActionResult makeAction(final Player player, final Effect[] inputResources, final Effect[] outputResources) {
@@ -71,11 +71,11 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
     }
 
     /**
-     * TODO.
+     * Skips turn for player
      *
-     * @param player
+     * @param player player that skipped
      *
-     * @return TODO
+     * @return true
      */
     @Override
     public boolean skipAction(final Player player) {
@@ -84,14 +84,17 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
     }
 
     /**
-     * TODO.
+     * tries to make action automatically
      *
-     * @param player
+     * @param player player that is making action
      *
-     * @return TODO
+     * @return if the action could be made
      */
     @Override
     public HasAction tryToMakeAction(final Player player) {
+        if (!figures.containsKey(player.playerOrder())) {
+            return HasAction.NO_ACTION_POSSIBLE;
+        }
         var c = CurrentThrow.initiate(player, resource, figures.get(player.playerOrder()));
         if (!c.canUseTools()) {
             int count = c.getResult() / MULTIPLIERS.get(resource);
@@ -109,9 +112,9 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
     }
 
     /**
-     * TODO.
+     * resets for a new turn
      *
-     * @return TODO
+     * @return
      */
     @Override
     public boolean newTurn() {
@@ -119,9 +122,9 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
     }
 
     /**
-     * TODO.
+     * get state
      *
-     * @return TODO
+     * @return state of this object
      */
     @Override
     public String state() {

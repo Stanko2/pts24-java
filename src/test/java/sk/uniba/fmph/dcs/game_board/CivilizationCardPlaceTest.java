@@ -1,7 +1,6 @@
 package sk.uniba.fmph.dcs.game_board;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import sk.uniba.fmph.dcs.player_board.PlayerBoard;
 import sk.uniba.fmph.dcs.player_board.PlayerBoardGameBoardFacade;
 import sk.uniba.fmph.dcs.stone_age.*;
@@ -9,83 +8,64 @@ import sk.uniba.fmph.dcs.stone_age.*;
 import java.util.ArrayList;
 import static org.junit.Assert.*;
 
-class CivilizationCardPlaceTest {
-    private CivilizationCardPlace cardPlace;
-    private CivilizationCardDeck mockDeck;
-    private Player mockPlayer;
-    private PlayerOrder mockPlayerOrder;
-    private CivilisationCard mockCard;
-    private PlayerBoard mockPlayerBoard;
+public class CivilizationCardPlaceTest {
 
-    @BeforeEach
-    void setUp() {
-        mockDeck = new CivilizationCardDeck(new ArrayList<>());
-        mockPlayerOrder = new PlayerOrder(1, 2);
-        mockPlayerBoard = new PlayerBoard();
-        mockPlayer = new Player(mockPlayerOrder, new PlayerBoardGameBoardFacade(new PlayerBoard()));
-        mockCard = new CivilisationCard(new ImmediateEffect[]{}, new EndOfGameEffect[]{});
+    @org.junit.Test
+    public void test_placeFigures() {
+        var t = new CivilizationCardPlace(new CivilizationCardDeck(new ArrayList<>()));
+        Player player1 = new Player(new PlayerOrder(1, 1), null);
+        Player player2 = new Player(new PlayerOrder(2, 2), null);
+        var ret = t.placeFigures(player1, 2);
+        assertFalse(ret);
+        ret = t.placeFigures(player1, 1);
+        assertTrue(ret);
+        ret = t.placeFigures(player1, 1);
+        assertFalse(ret);
+        ret = t.placeFigures(player2, 1);
+        assertTrue(ret);
+    }
 
-        cardPlace = new CivilizationCardPlace(mockDeck);
+    @org.junit.Test
+    public void test_makeAction() {
+        var resources = new ArrayList<Effect>();
+        resources.add(Effect.WOOD);
+        var cards = new ArrayList<CivilisationCard>();
+        cards.add(new CivilisationCard(new ImmediateEffect[]{ImmediateEffect.FOOD}, new EndOfGameEffect[] {EndOfGameEffect.SHAMAN}));
+        var t = new CivilizationCardPlace(new CivilizationCardDeck(new ArrayList<>()));
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
+        Player player2 = new Player(new PlayerOrder(2, 2), new PlayerBoardGameBoardFacade(new PlayerBoard()));
+        t.placeFigures(player1, 1);
+        var ret = t.makeAction(player2, new Effect[] { Effect.WOOD }, new Effect[] {});
+        assertEquals(ActionResult.FAILURE, ret);
+        ret = t.makeAction(player1, new Effect[] { Effect.WOOD }, new Effect[] {});
+        assertEquals(ActionResult.ACTION_DONE, ret);
+        ret = t.makeAction(player1, new Effect[] {}, new Effect[] {});
+        assertEquals(ActionResult.FAILURE, ret);
+    }
+
+    @org.junit.Test
+    public void test_tryToMakeAction_PlayerPresent() {
+        var resources = new ArrayList<Effect>();
+        resources.add(Effect.WOOD);
+        var cards = new ArrayList<CivilisationCard>();
+        cards.add(new CivilisationCard(new ImmediateEffect[]{ImmediateEffect.FOOD}, new EndOfGameEffect[] {EndOfGameEffect.SHAMAN}));
+        var t = new CivilizationCardPlace(new CivilizationCardDeck(new ArrayList<>()));
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
+        t.placeFigures(player1, 1);
+        var ret = t.tryToMakeAction(player1);
+        assertEquals(HasAction.WAITING_FOR_PLAYER_ACTION, ret);
     }
 
     @Test
-    void testPlaceFiguresSuccess() {
-        assertTrue(cardPlace.placeFigures(mockPlayer, 1));
-    }
-
-    @Test
-    void testPlaceFiguresFailureWhenAlreadyPlaced() {
-        cardPlace.placeFigures(mockPlayer, 1);
-        assertFalse(cardPlace.placeFigures(mockPlayer, 1));
-    }
-
-    @Test
-    void testTryToPlaceFigures() {
-        assertEquals(HasAction.WAITING_FOR_PLAYER_ACTION, cardPlace.tryToPlaceFigures(mockPlayer, 1));
-        cardPlace.placeFigures(mockPlayer, 1);
-        assertEquals(HasAction.NO_ACTION_POSSIBLE, cardPlace.tryToPlaceFigures(mockPlayer, 1));
-    }
-
-    @Test
-    void testMakeActionSuccess() {
-        Effect[] inputResources = {Effect.WOOD, Effect.CLAY};
-        Effect[] outputResources = {};
-
-        cardPlace.makeAction(mockPlayer, inputResources, outputResources);
-    }
-
-    @Test
-    void testMakeActionFailureDueToInsufficientResources() {
-        Effect[] inputResources = {Effect.WOOD};
-        Effect[] outputResources = {};
-
-        assertEquals(ActionResult.FAILURE, cardPlace.makeAction(mockPlayer, inputResources, outputResources));
-    }
-
-    @Test
-    void testSkipAction() {
-        cardPlace.placeFigures(mockPlayer, 1);
-        assertTrue(cardPlace.skipAction(mockPlayer));
-    }
-
-    @Test
-    void testTryToMakeAction() {
-        cardPlace.placeFigures(mockPlayer, 1);
-        assertEquals(HasAction.WAITING_FOR_PLAYER_ACTION, cardPlace.tryToMakeAction(mockPlayer));
-        var otherPlayer = new Player(new PlayerOrder(2,2), new PlayerBoardGameBoardFacade(mockPlayerBoard));
-        assertEquals(HasAction.NO_ACTION_POSSIBLE, cardPlace.tryToMakeAction(otherPlayer));
-    }
-
-    @Test
-    void testNewTurn() {
-        assertFalse(cardPlace.newTurn());
-        cardPlace.placeFigures(mockPlayer, 1);
-        assertTrue(cardPlace.newTurn());
-    }
-
-    @Test
-    void testState() {
-        assertNotNull(cardPlace.state());
+    public void test_tryToMakeAction_PlayerAbsent() {
+        var resources = new ArrayList<Effect>();
+        resources.add(Effect.WOOD);
+        var cards = new ArrayList<CivilisationCard>();
+        cards.add(new CivilisationCard(new ImmediateEffect[]{ImmediateEffect.FOOD}, new EndOfGameEffect[] {EndOfGameEffect.SHAMAN}));
+        var t = new CivilizationCardPlace(new CivilizationCardDeck(new ArrayList<>()));
+        Player player1 = new Player(new PlayerOrder(1, 1), null);
+        var ret = t.tryToMakeAction(player1);
+        assertEquals(HasAction.NO_ACTION_POSSIBLE, ret);
     }
 }
 

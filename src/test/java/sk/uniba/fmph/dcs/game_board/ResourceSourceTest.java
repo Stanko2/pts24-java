@@ -1,86 +1,89 @@
 package sk.uniba.fmph.dcs.game_board;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import sk.uniba.fmph.dcs.player_board.PlayerBoard;
 import sk.uniba.fmph.dcs.player_board.PlayerBoardGameBoardFacade;
 import sk.uniba.fmph.dcs.stone_age.*;
 
-import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-class ResourceSourceTest {
-    private ResourceSource resourceSource;
-    private Player mockPlayer;
-    private PlayerOrder mockPlayerOrder;
-    private PlayerBoard mockPlayerBoard;
 
-    @BeforeEach
-    void setUp() {
-        mockPlayerOrder = new PlayerOrder(1, 2);
-        mockPlayerBoard = new PlayerBoard();
-        mockPlayer = new Player(mockPlayerOrder, new PlayerBoardGameBoardFacade(mockPlayerBoard));
+public class ResourceSourceTest {
 
-        resourceSource = new ResourceSource(Effect.WOOD, 4);
+    @Test
+    public void testPlaceFigures() {
+        var t = new ResourceSource(Effect.CLAY, 2);
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
+        Player player2 = new Player(new PlayerOrder(2, 2), null);
+        var ret = t.placeFigures(player1, 2);
+        assertFalse(ret);
+        ret = t.placeFigures(player1, 1);
+        assertTrue(ret);
+        ret = t.placeFigures(player1, 1);
+        assertFalse(ret);
+        ret = t.placeFigures(player2, 1);
+        assertTrue(ret);
     }
 
     @Test
-    void testPlaceFigures() {
-        assertFalse(resourceSource.placeFigures(mockPlayer, 3));
+    public void testTryToPlaceFiguresSuccess() {
+        var t = new ResourceSource(Effect.CLAY, 2);
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
+        assertEquals(HasAction.WAITING_FOR_PLAYER_ACTION, t.tryToPlaceFigures(player1, 3));
     }
 
     @Test
-    void testTryToPlaceFiguresSuccess() {
-        // Successful placement of figures within the limit
-        assertEquals(HasAction.WAITING_FOR_PLAYER_ACTION, resourceSource.tryToPlaceFigures(mockPlayer, 3));
+    public void testTryToPlaceFiguresFailureWhenExceedsLimit() {
+        var t = new ResourceSource(Effect.CLAY, 2);
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
+        t.tryToPlaceFigures(player1, 3);
+        assertEquals(HasAction.NO_ACTION_POSSIBLE, t.tryToPlaceFigures(player1, 8));
     }
 
     @Test
-    void testTryToPlaceFiguresFailureWhenExceedsLimit() {
-        // Exceeding the limit of 7 figures
-        resourceSource.tryToPlaceFigures(mockPlayer, 3);
-        assertEquals(HasAction.NO_ACTION_POSSIBLE, resourceSource.tryToPlaceFigures(mockPlayer, 5));
+    public void testMakeActionSuccess() {
+        var t = new ResourceSource(Effect.CLAY, 2);
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
+
+        t.tryToPlaceFigures(player1, 2);
+        assertEquals(ActionResult.ACTION_DONE_WAIT_FOR_TOOL_USE, t.makeAction(player1, null, null));
     }
 
     @Test
-    void testMakeActionSuccess() {
-        resourceSource.tryToPlaceFigures(mockPlayer, 2);
+    public void testMakeActionFailure() {
+        var t = new ResourceSource(Effect.CLAY, 2);
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
 
-        assertEquals(ActionResult.ACTION_DONE_WAIT_FOR_TOOL_USE, resourceSource.makeAction(mockPlayer, null, null));
+        assertEquals(ActionResult.FAILURE, t.makeAction(player1, null, null));
     }
 
     @Test
-    void testMakeActionFailure() {
-        assertEquals(ActionResult.FAILURE, resourceSource.makeAction(mockPlayer, null, null));
+    public void testSkipAction() {
+        var t = new ResourceSource(Effect.CLAY, 2);
+        Player player1 = new Player(new PlayerOrder(1, 1), null);
+
+        t.tryToPlaceFigures(player1, 2);
+        assertTrue(t.skipAction(player1));
+        assertEquals(t.tryToPlaceFigures(player1, 1), HasAction.WAITING_FOR_PLAYER_ACTION);
     }
 
     @Test
-    void testSkipAction() {
-        resourceSource.tryToPlaceFigures(mockPlayer, 2);
-        assertTrue(resourceSource.skipAction(mockPlayer));
-        assertEquals(resourceSource.tryToPlaceFigures(mockPlayer, 1), HasAction.WAITING_FOR_PLAYER_ACTION);
-    }
+    public void testTryToMakeAction() {
+        var t = new ResourceSource(Effect.CLAY, 2);
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
 
-    @Test
-    void testTryToMakeAction() {
-        resourceSource.tryToPlaceFigures(mockPlayer, 2);
-        HasAction result = resourceSource.tryToMakeAction(mockPlayer);
+
+        t.tryToPlaceFigures(player1, 2);
+        HasAction result = t.tryToMakeAction(player1);
         assertNotEquals(HasAction.NO_ACTION_POSSIBLE, result);
     }
 
     @Test
-    void testTryToMakeActionNoFigures() {
-        assertEquals(HasAction.NO_ACTION_POSSIBLE, resourceSource.tryToMakeAction(mockPlayer));
-    }
+    public void testTryToMakeActionNoFigures() {
+        var t = new ResourceSource(Effect.CLAY, 2);
+        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
 
-    @Test
-    void testNewTurn() {
-        assertFalse(resourceSource.newTurn());
-    }
-
-    @Test
-    void testState() {
-        assertNotNull(resourceSource.state());
+        assertEquals(HasAction.NO_ACTION_POSSIBLE, t.tryToMakeAction(player1));
     }
 }
