@@ -1,71 +1,176 @@
 package sk.uniba.fmph.dcs.game_board;
 
-import org.junit.Test;
-import sk.uniba.fmph.dcs.player_board.PlayerBoard;
-import sk.uniba.fmph.dcs.player_board.PlayerBoardGameBoardFacade;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import sk.uniba.fmph.dcs.stone_age.*;
 
-import java.util.ArrayList;
-import static org.junit.Assert.*;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class CivilizationCardPlaceTest {
+    private CivilizationCardPlace civilizationCardPlace;
+    private CivilizationCardPlace nextCardPlace;
 
-    @org.junit.Test
-    public void test_placeFigures() {
-        var t = new CivilizationCardPlace(new CivilizationCardDeck(new ArrayList<>()));
-        Player player1 = new Player(new PlayerOrder(1, 1), null);
-        Player player2 = new Player(new PlayerOrder(2, 2), null);
-        var ret = t.placeFigures(player1, 2);
-        assertFalse(ret);
-        ret = t.placeFigures(player1, 1);
-        assertTrue(ret);
-        ret = t.placeFigures(player1, 1);
-        assertFalse(ret);
-        ret = t.placeFigures(player2, 1);
-        assertTrue(ret);
-    }
+    @Mock
+    private Player player;
 
-    @org.junit.Test
-    public void test_makeAction() {
-        var resources = new ArrayList<Effect>();
-        resources.add(Effect.WOOD);
-        var cards = new ArrayList<CivilisationCard>();
-        cards.add(new CivilisationCard(new ImmediateEffect[]{ImmediateEffect.FOOD}, new EndOfGameEffect[] {EndOfGameEffect.SHAMAN}));
-        var t = new CivilizationCardPlace(new CivilizationCardDeck(new ArrayList<>()));
-        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
-        Player player2 = new Player(new PlayerOrder(2, 2), new PlayerBoardGameBoardFacade(new PlayerBoard()));
-        t.placeFigures(player1, 1);
-        var ret = t.makeAction(player2, new Effect[] { Effect.WOOD }, new Effect[] {});
-        assertEquals(ActionResult.FAILURE, ret);
-        ret = t.makeAction(player1, new Effect[] { Effect.WOOD }, new Effect[] {});
-        assertEquals(ActionResult.ACTION_DONE, ret);
-        ret = t.makeAction(player1, new Effect[] {}, new Effect[] {});
-        assertEquals(ActionResult.FAILURE, ret);
-    }
+    @Mock
+    private CivilizationCardDeck civilizationCardDeck;
 
-    @org.junit.Test
-    public void test_tryToMakeAction_PlayerPresent() {
-        var resources = new ArrayList<Effect>();
-        resources.add(Effect.WOOD);
-        var cards = new ArrayList<CivilisationCard>();
-        cards.add(new CivilisationCard(new ImmediateEffect[]{ImmediateEffect.FOOD}, new EndOfGameEffect[] {EndOfGameEffect.SHAMAN}));
-        var t = new CivilizationCardPlace(new CivilizationCardDeck(new ArrayList<>()));
-        Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
-        t.placeFigures(player1, 1);
-        var ret = t.tryToMakeAction(player1);
-        assertEquals(HasAction.WAITING_FOR_PLAYER_ACTION, ret);
+    private InterfacePlayerBoardGameBoard mockPlayerBoard;
+    private List<Optional<CivilisationCard>> cards = List.of(
+            Optional.of(new CivilisationCard(new ImmediateEffect[]{ImmediateEffect.CLAY, ImmediateEffect.WOOD}, new EndOfGameEffect[]{})),
+            Optional.of(new CivilisationCard(new ImmediateEffect[]{ImmediateEffect.THROW_WOOD}, new EndOfGameEffect[]{})),
+            Optional.of(new CivilisationCard(new ImmediateEffect[]{ImmediateEffect.ARBITRARY_RESOURCE}, new EndOfGameEffect[]{})),
+            Optional.empty()
+    );
+    private int cardIndex = 0;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mockPlayerBoard = mock(InterfacePlayerBoardGameBoard.class);
+        civilizationCardDeck = mock(CivilizationCardDeck.class);
+        when(civilizationCardDeck.getTop()).thenReturn(
+                cards.get(cardIndex)
+        );
+
+        player = mock(Player.class);
+        when(player.playerBoard()).thenReturn(mockPlayerBoard);
+        when(player.playerOrder()).thenReturn(new PlayerOrder(1,1));
+
+
+        civilizationCardPlace = new CivilizationCardPlace(civilizationCardDeck, 2, List.of(player));
+        cardIndex = 3;
+        nextCardPlace = new CivilizationCardPlace(civilizationCardDeck, 1, List.of(player));
+
+        cardIndex = 0;
+        civilizationCardPlace.setNextSlot(nextCardPlace);
     }
 
     @Test
-    public void test_tryToMakeAction_PlayerAbsent() {
-        var resources = new ArrayList<Effect>();
-        resources.add(Effect.WOOD);
-        var cards = new ArrayList<CivilisationCard>();
-        cards.add(new CivilisationCard(new ImmediateEffect[]{ImmediateEffect.FOOD}, new EndOfGameEffect[] {EndOfGameEffect.SHAMAN}));
-        var t = new CivilizationCardPlace(new CivilizationCardDeck(new ArrayList<>()));
-        Player player1 = new Player(new PlayerOrder(1, 1), null);
-        var ret = t.tryToMakeAction(player1);
-        assertEquals(HasAction.NO_ACTION_POSSIBLE, ret);
+    void placeFigures_ShouldAllowToPlaceOneFigure() {
+        assertEquals(HasAction.WAITING_FOR_PLAYER_ACTION, civilizationCardPlace.tryToPlaceFigures(player,1));
+        assertTrue(civilizationCardPlace.placeFigures(player, 1));
+        assertEquals(HasAction.NO_ACTION_POSSIBLE, civilizationCardPlace.tryToPlaceFigures(player,1));
+        assertFalse(civilizationCardPlace.placeFigures(player, 1));
+    }
+
+    @Test
+    void makeAction_ShouldFailWithNoFigure() {
+        assertEquals(civilizationCardPlace.makeAction(player, new Effect[]{Effect.WOOD}, new Effect[]{Effect.WOOD}), ActionResult.FAILURE);
+    }
+
+    @Test
+    void makeAction_ShouldFailWithNotEnoughResources() {
+        cardIndex = 0;
+        civilizationCardPlace.placeFigures(player, 1);
+
+        when(mockPlayerBoard.takeResources(any())).thenReturn(true);
+
+        assertEquals(civilizationCardPlace.makeAction(player, new Effect[]{}, new Effect[]{}), ActionResult.FAILURE);
+        assertEquals(civilizationCardPlace.makeAction(player, new Effect[]{Effect.WOOD, Effect.WOOD}, new Effect[]{}), ActionResult.ACTION_DONE);
+    }
+
+    @Test
+    void makeAction_ShouldFailWithNoCard() {
+        cardIndex = 0;
+        civilizationCardPlace.placeFigures(player, 1);
+
+        when(mockPlayerBoard.takeResources(any())).thenReturn(true);
+
+        assertEquals(nextCardPlace.makeAction(player, new Effect[]{}, new Effect[]{}), ActionResult.FAILURE);
+        assertEquals(nextCardPlace.makeAction(player, new Effect[]{Effect.WOOD, Effect.WOOD}, new Effect[]{}), ActionResult.FAILURE);
+        verify(mockPlayerBoard, times(0)).takeResources(any());
+    }
+
+    @Test
+    void makeAction_ShouldFailWithWrongResources() {
+        cardIndex = 0;
+        civilizationCardPlace.placeFigures(player, 1);
+
+        when(mockPlayerBoard.takeResources(any())).thenReturn(true);
+
+        assertEquals(civilizationCardPlace.makeAction(player, new Effect[]{Effect.WOOD, Effect.FOOD}, new Effect[]{}), ActionResult.FAILURE);
+        assertEquals(civilizationCardPlace.makeAction(player, new Effect[]{Effect.WOOD, Effect.CLAY}, new Effect[]{}), ActionResult.ACTION_DONE);
+    }
+
+    @Test
+    void makeAction_ShouldGiveEndOfGameEffectsOnSuccess() {
+        cardIndex = 0;
+        civilizationCardPlace.placeFigures(player, 1);
+
+        when(mockPlayerBoard.takeResources(any())).thenReturn(true);
+
+        assertEquals(civilizationCardPlace.makeAction(player, new Effect[]{Effect.WOOD, Effect.CLAY}, new Effect[]{}), ActionResult.ACTION_DONE);
+        verify(mockPlayerBoard, times(1)).giveEndOfGameEffect(any());
+        assertEquals(null, civilizationCardPlace.getCard());
+    }
+
+    @Test
+    void makeAction_ShouldGetFixedResources() {
+        cardIndex = 0;
+        civilizationCardPlace.placeFigures(player, 1);
+        when(mockPlayerBoard.takeResources(any())).thenReturn(true);
+
+        civilizationCardPlace.makeAction(player, new Effect[]{Effect.WOOD, Effect.CLAY}, new Effect[]{});
+
+        verify(mockPlayerBoard, times(2)).giveEffect(any());
+        assertEquals(null, civilizationCardPlace.getCard());
+    }
+
+    @Test
+    void makeAction_ShouldGetThrowResources() {
+        cardIndex = 1;
+        civilizationCardPlace.placeFigures(player, 1);
+        when(mockPlayerBoard.takeResources(any())).thenReturn(true);
+
+        civilizationCardPlace.makeAction(player, new Effect[]{Effect.WOOD, Effect.CLAY}, new Effect[]{});
+        verify(mockPlayerBoard, times(2)).giveEffect(any());
+        assertEquals(null, civilizationCardPlace.getCard());
+    }
+
+    @Test
+    void makeAction_ShouldGetWantedResources() {
+        cardIndex = 2;
+        civilizationCardPlace.placeFigures(player, 1);
+        when(mockPlayerBoard.takeResources(any())).thenReturn(true);
+
+        civilizationCardPlace.makeAction(player, new Effect[]{Effect.WOOD, Effect.CLAY}, new Effect[]{Effect.CLAY});
+        verify(mockPlayerBoard, times(1)).giveEffect(new Effect[]{Effect.CLAY});
+        assertEquals(null, civilizationCardPlace.getCard());
+    }
+
+    @Test
+    void newTurn_ShouldMoveCardToNext() {
+        cardIndex = 0;
+        nextCardPlace.placeFigures(player, 1);
+        when(mockPlayerBoard.takeResources(any())).thenReturn(true);
+        nextCardPlace.makeAction(player, new Effect[]{Effect.WOOD}, new Effect[]{});
+        assertEquals(null, nextCardPlace.getCard());
+        assertFalse(civilizationCardPlace.newTurn());
+
+        assertNotEquals(null, civilizationCardPlace.getCard());
+        assertNotEquals(null, nextCardPlace.getCard());
+    }
+
+    @Test
+    void newTurn_ShouldEndGameWhenNoCardsLeft() {
+
+        nextCardPlace.placeFigures(player, 1);
+        when(mockPlayerBoard.takeResources(any())).thenReturn(true);
+        nextCardPlace.makeAction(player, new Effect[]{Effect.WOOD}, new Effect[]{});
+        assertEquals(null, nextCardPlace.getCard());
+
+        cardIndex = 3;
+        assertTrue(civilizationCardPlace.newTurn());
     }
 }
 

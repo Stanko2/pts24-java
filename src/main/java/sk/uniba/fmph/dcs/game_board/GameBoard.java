@@ -5,10 +5,7 @@ import sk.uniba.fmph.dcs.stone_age.Effect;
 import sk.uniba.fmph.dcs.stone_age.InterfaceGetState;
 import sk.uniba.fmph.dcs.stone_age.Location;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class GameBoard implements InterfaceGetState {
     private final Map<Location, InterfaceFigureLocationInternal> locations;
@@ -29,10 +26,10 @@ public class GameBoard implements InterfaceGetState {
         locations.put(Location.BUILDING_TILE2, new BuildingTile(buildings[1]));
         locations.put(Location.BUILDING_TILE3, new BuildingTile(buildings[2]));
         locations.put(Location.BUILDING_TILE4, new BuildingTile(buildings[3]));
-        locations.put(Location.CIVILISATION_CARD1, new CivilizationCardPlace(deck));
-        locations.put(Location.CIVILISATION_CARD2, new CivilizationCardPlace(deck));
-        locations.put(Location.CIVILISATION_CARD3, new CivilizationCardPlace(deck));
-        locations.put(Location.CIVILISATION_CARD4, new CivilizationCardPlace(deck));
+        locations.put(Location.CIVILISATION_CARD1, new CivilizationCardPlace(deck, 1, players));
+        locations.put(Location.CIVILISATION_CARD2, new CivilizationCardPlace(deck, 2, players));
+        locations.put(Location.CIVILISATION_CARD3, new CivilizationCardPlace(deck, 3, players));
+        locations.put(Location.CIVILISATION_CARD4, new CivilizationCardPlace(deck, 4, players));
     }
 
     /**

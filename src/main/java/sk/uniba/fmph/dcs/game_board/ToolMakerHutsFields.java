@@ -62,7 +62,7 @@ public class ToolMakerHutsFields {
      * @return true if action can be completed
      */
     public boolean actionToolMaker(final Player player) {
-        if (!toolMakerFigures.getFirst().equals(player.playerOrder())) {
+        if (!toolMakerFigures.get(0).equals(player.playerOrder())) {
             return false;
         }
         player.playerBoard().giveEffect(new Effect[] {Effect.TOOL});
@@ -108,7 +108,7 @@ public class ToolMakerHutsFields {
      * @return true if action can be completed
      */
     public boolean actionHut(final Player player) {
-        if (!hutFigures.getFirst().equals(player.playerOrder())) {
+        if (!hutFigures.get(0).equals(player.playerOrder())) {
             return false;
         }
         player.playerBoard().giveFigure();
@@ -153,7 +153,7 @@ public class ToolMakerHutsFields {
      * @return true if action can be completed
      */
     public boolean actionFields(final Player player) {
-        if (!fieldsFigures.getFirst().equals(player.playerOrder())) {
+        if (!fieldsFigures.get(0).equals(player.playerOrder())) {
             return false;
         }
         player.playerBoard().giveEffect(new Effect[] {Effect.FIELD});

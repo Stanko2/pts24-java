@@ -5,25 +5,19 @@ import sk.uniba.fmph.dcs.stone_age.InterfaceToolUse;
 
 import java.util.Optional;
 
-public final class CurrentThrow implements InterfaceToolUse {
-    private int result;
+public class CurrentThrow implements InterfaceToolUse {
+    private int result = 0;
     private final Player player;
     private final Effect throwsFor;
     private boolean finalized = false;
 
-    private CurrentThrow(final Effect throwsFor, final int throwResult, final Player player) {
+    public CurrentThrow(final Effect throwsFor, final int diceCount, final Player player) {
         this.throwsFor = throwsFor;
         this.player = player;
-        this.result = throwResult;
-    }
-
-    public static CurrentThrow initiate(final Player player, final Effect effect, final int dices) {
-        int[] values = Throw.hod(dices);
-        int s = 0;
-        for (int i = 0; i < values.length; i++) {
-            s += values[i];
+        var ret = Throw.hod(diceCount);
+        for (int i = 0; i < ret.length; i++) {
+            this.result += ret[i];
         }
-        return new CurrentThrow(effect, s, player);
     }
 
     @Override

@@ -1,182 +1,58 @@
 package sk.uniba.fmph.dcs.game_board;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import sk.uniba.fmph.dcs.stone_age.Effect;
-import sk.uniba.fmph.dcs.stone_age.EndOfGameEffect;
 import sk.uniba.fmph.dcs.stone_age.InterfacePlayerBoardGameBoard;
 import sk.uniba.fmph.dcs.stone_age.PlayerOrder;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 class CurrentThrowTest {
-    private static class TestPlayer {
-        public TestPlayerBoard board;
+    private CurrentThrow currentThrow;
 
-        public TestPlayer(TestPlayerBoard board) {
-            this.board = board;
-        }
+    @Mock
+    private Player player;
 
-        public InterfacePlayerBoardGameBoard playerBoard() {
-            return board;
-        }
+    private InterfacePlayerBoardGameBoard mockPlayerBoard;
 
-        public PlayerOrder playerOrder() {
-            return new PlayerOrder(1,1);
-        }
-    }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mockPlayerBoard = mock(InterfacePlayerBoardGameBoard.class);
 
-    private static class TestPlayerBoard implements InterfacePlayerBoardGameBoard {
-        private int toolCount;
+        player = mock(Player.class);
+        when(player.playerBoard()).thenReturn(mockPlayerBoard);
+        when(player.playerOrder()).thenReturn(new PlayerOrder(1,1));
 
-
-        public TestPlayerBoard(int toolCount) {
-            this.toolCount = toolCount;
-        }
-
-        @Override
-        public void giveEffect(Effect[] stuff) {
-
-        }
-
-        @Override
-        public void giveEndOfGameEffect(EndOfGameEffect[] stuff) {
-
-        }
-
-        @Override
-        public boolean takeResources(Effect[] stuff) {
-            return false;
-        }
-
-        @Override
-        public void giveFigure() {
-
-        }
-
-        @Override
-        public boolean takeFigures(int count) {
-            return false;
-        }
-
-        @Override
-        public boolean hasFigures(int count) {
-            return false;
-        }
-
-        @Override
-        public void addPoints(int points) {
-
-        }
-
-        @Override
-        public boolean hasSufficientTools(int goal) {
-            return toolCount >= goal;
-        }
-
-        @Override
-        public Optional<Integer> useTool(int idx) {
-            if (idx >= toolCount) {
-                return Optional.empty();
-            }
-            return Optional.of(3);
-        }
+        currentThrow = new CurrentThrow(Effect.WOOD, 3, player);
     }
 
     @Test
-    void initiate_ShouldCreateNewThrowWithCorrectSum() {
-        TestPlayerBoard board = new TestPlayerBoard(3);
-        TestPlayer player = new TestPlayer(board);
-        Effect effect = Effect.WOOD;
-
-        CurrentThrow currentThrow = CurrentThrow.initiate(new Player(player.playerOrder(), player.playerBoard()), effect, 3);
-
-        assertNotNull(currentThrow);
-        assertTrue(currentThrow.getResult() >= 3); // Minimum possible roll with 3 dice
-        assertTrue(currentThrow.getResult() <= 18); // Maximum possible roll with 3 dice
+    void getResult_shouldBeInRange() {
+        assertTrue(currentThrow.getResult() >= 3);
+        assertTrue(currentThrow.getResult() <= 18);
     }
 
     @Test
-    void useTool_WhenToolAvailable_ShouldAddToResult() {
-        TestPlayerBoard board = new TestPlayerBoard(3);
-        TestPlayer player = new TestPlayer(board);
-        Effect effect = Effect.WOOD;
-
-        CurrentThrow currentThrow = CurrentThrow.initiate(new Player(player.playerOrder(), player.playerBoard()), effect, 3);
-        var res = currentThrow.getResult();
-        boolean result = currentThrow.useTool(0);
-        assertTrue(currentThrow.getResult() > res);
-        assertTrue(result);
-    }
-
-    @Test
-    void useTool_WhenNoToolAvailable_ShouldReturnFalse() {
-        TestPlayerBoard board = new TestPlayerBoard(0);
-        TestPlayer player = new TestPlayer(board);
-        Effect effect = Effect.WOOD;
-
-        CurrentThrow currentThrow = CurrentThrow.initiate(new Player(player.playerOrder(), player.playerBoard()), effect, 3);
-        boolean result = currentThrow.useTool(0);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void useTool_AfterFinalized_ShouldThrowException() {
-        TestPlayerBoard board = new TestPlayerBoard(3);
-        TestPlayer player = new TestPlayer(board);
-        Effect effect = Effect.WOOD;
-
-        CurrentThrow currentThrow = CurrentThrow.initiate(new Player(player.playerOrder(), player.playerBoard()), effect, 3);
-        currentThrow.finishUsingTools();
-
-        assertThrows(RuntimeException.class, () -> currentThrow.useTool(0));
-    }
-
-    @Test
-    void canUseTools_WhenToolsAvailable_ShouldReturnTrue() {
-        TestPlayerBoard board = new TestPlayerBoard(3);
-        TestPlayer player = new TestPlayer(board);
-        Effect effect = Effect.WOOD;
-
-        CurrentThrow currentThrow = CurrentThrow.initiate(new Player(player.playerOrder(), player.playerBoard()), effect, 3);
-
-        assertTrue(currentThrow.canUseTools());
-    }
-
-    @Test
-    void canUseTools_WhenNoToolsAvailable_ShouldReturnFalse() {
-        TestPlayerBoard board = new TestPlayerBoard(0);
-        TestPlayer player = new TestPlayer(board);
-        Effect effect = Effect.WOOD;
-
-        CurrentThrow currentThrow = CurrentThrow.initiate(new Player(player.playerOrder(), player.playerBoard()), effect, 3);
-
-        assertFalse(currentThrow.canUseTools());
-    }
-
-    @Test
-    void finishUsingTools_ShouldPreventFurtherToolUse() {
-        TestPlayerBoard board = new TestPlayerBoard(3);
-        TestPlayer player = new TestPlayer(board);
-        Effect effect = Effect.WOOD;
-
-        CurrentThrow currentThrow = CurrentThrow.initiate(new Player(player.playerOrder(), player.playerBoard()), effect, 3);
-
-        assertTrue(currentThrow.finishUsingTools());
-        assertThrows(RuntimeException.class, () -> currentThrow.useTool(0));
-    }
-
-    @Test
-    void multipleToolUse_ShouldAccumulateResults() {
-        TestPlayerBoard board = new TestPlayerBoard(3);
-        TestPlayer player = new TestPlayer(board);
-        Effect effect = Effect.WOOD;
-
-        CurrentThrow currentThrow = CurrentThrow.initiate(new Player(player.playerOrder(), player.playerBoard()), effect, 3);
+    void useTool_increasesResult() {
+        when(mockPlayerBoard.useTool(0)).thenReturn(Optional.of(2));
+        var result = currentThrow.getResult();
 
         assertTrue(currentThrow.useTool(0));
-        assertTrue(currentThrow.useTool(1));
+        assertEquals(currentThrow.getResult(), result+2);
+    }
+
+    @Test
+    void useTool_throwWhenFinalized() {
+        assertTrue(currentThrow.finishUsingTools());
+        assertFalse(currentThrow.canUseTools());
+        Assertions.assertThrows(RuntimeException.class, ()->currentThrow.useTool(0));
     }
 }

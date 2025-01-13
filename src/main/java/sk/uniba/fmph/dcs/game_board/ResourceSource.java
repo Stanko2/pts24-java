@@ -95,7 +95,7 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
         if (!figures.containsKey(player.playerOrder())) {
             return HasAction.NO_ACTION_POSSIBLE;
         }
-        var c = CurrentThrow.initiate(player, resource, figures.get(player.playerOrder()));
+        var c = new CurrentThrow(resource, figures.get(player.playerOrder()), player);
         if (!c.canUseTools()) {
             int count = c.getResult() / MULTIPLIERS.get(resource);
             for (int i = 0; i < count; i++) {

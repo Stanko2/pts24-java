@@ -1,18 +1,30 @@
 package sk.uniba.fmph.dcs.game_board;
 
 import org.json.JSONObject;
+import sk.uniba.fmph.dcs.game_phase_controller.GamePhaseController;
 import sk.uniba.fmph.dcs.stone_age.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
-    private int requiredResources;
     private CivilisationCard card;
     private PlayerOrder figure;
     private final CivilizationCardDeck deck;
+    private final int requiredResources;
+    private final List<Player> players;
+    private CivilizationCardPlace nextSlot;
+    private static List<CivilizationCardPlace> instances = new ArrayList<>();
+    public static GamePhaseController gamePhaseController;
 
-    public CivilizationCardPlace(final CivilizationCardDeck deck) {
+    public CivilizationCardPlace(final CivilizationCardDeck deck, final int requiredResources, final Collection<Player> players) {
         this.deck = deck;
+        this.requiredResources = requiredResources;
+        this.players = (List<Player>) players;
+        this.card = deck.getTop().get();
+        instances.add(this);
     }
 
     /**
@@ -30,6 +42,10 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
         }
         figure = player.playerOrder();
         return true;
+    }
+
+    public void setNextSlot(CivilizationCardPlace nextSlot) {
+        this.nextSlot = nextSlot;
     }
 
     /**
@@ -86,6 +102,21 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
         }
     }
 
+    private Effect[] toEffects(ImmediateEffect[] immediateEffects) {
+        var ret = new Effect[immediateEffects.length];
+        for (int i = 0; i < immediateEffects.length; i++) {
+            switch (immediateEffects[i]){
+                case CLAY -> ret[i] = Effect.CLAY;
+                case WOOD -> ret[i] = Effect.WOOD;
+                case GOLD -> ret[i] = Effect.GOLD;
+                case STONE -> ret[i] = Effect.STONE;
+                case FOOD -> ret[i] = Effect.FOOD;
+            }
+
+        }
+        return ret;
+    }
+
     /**
      * TODO.
      *
@@ -97,20 +128,55 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
      */
     @Override
     public ActionResult makeAction(final Player player, final Effect[] inputResources, final Effect[] outputResources) {
+        if (card == null) {
+            return ActionResult.FAILURE;
+        }
+
+        if (figure != player.playerOrder()) {
+            return ActionResult.FAILURE;
+        }
+
+        // player does not have resources
         if (!player.playerBoard().takeResources(inputResources)) {
             return ActionResult.FAILURE;
         }
-        player.playerBoard().giveEndOfGameEffect(card.endOfGameEffect());
-        for (var effect : card.immediateEffect()) {
-            var x = getEffect(effect);
-            x.performEffect(player, null);
-        }
-        figure = null;
 
-        var x = deck.getTop();
-        if (!x.isEmpty()) {
-            card = x.get();
+        // wrong number of resources
+        if (inputResources.length != requiredResources) {
+            return ActionResult.FAILURE;
         }
+
+        // food is not allowed
+        for (int i = 0; i < inputResources.length; i++) {
+            if (inputResources[i] == Effect.FOOD)
+                return ActionResult.FAILURE;
+        }
+
+        player.playerBoard().giveEndOfGameEffect(card.endOfGameEffect());
+        ImmediateEffect[] immediateEffect = card.immediateEffect();
+        for (int i = 0; i < immediateEffect.length; i++) {
+            var effect = immediateEffect[i];
+            if (effect == ImmediateEffect.ALL_PLAYERS_TAKE_REWARD) {
+                var menu = new RewardMenu(Arrays.stream(toEffects(card.immediateEffect())).toList(), players);
+                new AllPlayersTakeReward(menu, gamePhaseController).performEffect(player, outputResources[0]);
+                break;
+            } else if (effect == ImmediateEffect.ARBITRARY_RESOURCE) {
+                new GetSomethingFixed(List.of(outputResources)).performEffect(player, outputResources[i]);
+            } else if (effect == ImmediateEffect.POINT) {
+                player.playerBoard().addPoints(1);
+            } else {
+                var x = getEffect(effect);
+                if (x instanceof GetSomethingThrow) {
+                    x.performEffect(player, ((GetSomethingThrow)x).resource);
+                } else {
+                    x.performEffect(player, null);
+                }
+            }
+
+        }
+
+        figure = null;
+        card = null;
         return ActionResult.ACTION_DONE;
     }
 
@@ -125,6 +191,10 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
     public boolean skipAction(final Player player) {
         figure = null;
         return true;
+    }
+
+    public CivilisationCard getCard() {
+        return card;
     }
 
     /**
@@ -150,7 +220,35 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
      */
     @Override
     public boolean newTurn() {
-        return figure != null;
+        if (nextSlot == null) {
+            return false;
+        }
+
+        moveCards();
+
+        if (card == null) {
+            var c = deck.getTop();
+            if(c.isEmpty()) {
+                return true;
+            }
+            card = c.get();
+        }
+        return false;
+    }
+
+    private static void moveCards() {
+        var moved = true;
+        while (moved) {
+            moved = false;
+            for (var cardPlace : instances) {
+                if (cardPlace.nextSlot == null) continue;
+                if (cardPlace.card != null && cardPlace.nextSlot.card == null) {
+                    moved = true;
+                    cardPlace.nextSlot.card = cardPlace.card;
+                    cardPlace.card = null;
+                }
+            }
+        }
     }
 
     /**
