@@ -8,17 +8,20 @@ import sk.uniba.fmph.dcs.stone_age.PlayerOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.Stack;
 
 public final class BuildingTile implements InterfaceFigureLocationInternal {
-    private final Building building;
+    private final Stack<Building> buildingStack;
     private final ArrayList<PlayerOrder> figures;
+    private final boolean isUsed;
 
     /**
-     * @param building
-     *            building on that building tile
+     * @param buildingStack
+     *            buildings on that building tile
      */
-    public BuildingTile(final Building building) {
-        this.building = building;
+    public BuildingTile(final Stack<Building> buildingStack) {
+        this.buildingStack = buildingStack;
+        isUsed = buildingStack.empty();
         figures = new ArrayList<>();
     }
 
@@ -74,7 +77,7 @@ public final class BuildingTile implements InterfaceFigureLocationInternal {
      */
     @Override
     public ActionResult makeAction(final Player player, final Effect[] inputResources, final Effect[] outputResources) {
-        OptionalInt points = building.build(List.of(inputResources));
+        OptionalInt points = buildingStack.pop().build(List.of(inputResources));
         if (tryToMakeAction(player) == HasAction.NO_ACTION_POSSIBLE) {
             return ActionResult.FAILURE;
         }
@@ -95,7 +98,8 @@ public final class BuildingTile implements InterfaceFigureLocationInternal {
      */
     @Override
     public boolean skipAction(final Player player) {
-        return false;
+        figures.remove(player.playerOrder());
+        return true;
     }
 
     /**
@@ -116,7 +120,7 @@ public final class BuildingTile implements InterfaceFigureLocationInternal {
      */
     @Override
     public boolean newTurn() {
-        return false;
+        return isUsed && buildingStack.empty();
     }
 
     @Override

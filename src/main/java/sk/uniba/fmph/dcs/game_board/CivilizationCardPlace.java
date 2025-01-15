@@ -220,11 +220,11 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
      */
     @Override
     public boolean newTurn() {
+        moveCards();
         if (nextSlot == null) {
             return false;
         }
 
-        moveCards();
 
         if (card == null) {
             var c = deck.getTop();

@@ -11,10 +11,10 @@ public class GameBoard implements InterfaceGetState {
     private final Map<Location, InterfaceFigureLocationInternal> locations;
     private final CivilizationCardDeck deck;
 
-    public GameBoard(final Collection<Player> players, final Building[] buildings) {
+    public GameBoard(final Collection<Player> players, final ArrayList<Stack<Building>> buildings, final CivilizationCardDeck deck) {
         ToolMakerHutsFields fields = new ToolMakerHutsFields(players.size());
         locations = new HashMap<>();
-        deck = new CivilizationCardDeck(new ArrayList<>());
+        this.deck = deck;
         locations.put(Location.HUT, new PlaceOnHutAdaptor(fields));
         locations.put(Location.FIELD, new PlaceOnFieldsAdaptor(fields));
         locations.put(Location.TOOL_MAKER, new PlaceOnToolMakerAdaptor(fields));
@@ -22,14 +22,33 @@ public class GameBoard implements InterfaceGetState {
         locations.put(Location.FOREST, new ResourceSource(Effect.WOOD, players.size()));
         locations.put(Location.QUARRY, new ResourceSource(Effect.STONE, players.size()));
         locations.put(Location.RIVER,  new ResourceSource(Effect.GOLD, players.size()));
-        locations.put(Location.BUILDING_TILE1, new BuildingTile(buildings[0]));
-        locations.put(Location.BUILDING_TILE2, new BuildingTile(buildings[1]));
-        locations.put(Location.BUILDING_TILE3, new BuildingTile(buildings[2]));
-        locations.put(Location.BUILDING_TILE4, new BuildingTile(buildings[3]));
-        locations.put(Location.CIVILISATION_CARD1, new CivilizationCardPlace(deck, 1, players));
-        locations.put(Location.CIVILISATION_CARD2, new CivilizationCardPlace(deck, 2, players));
-        locations.put(Location.CIVILISATION_CARD3, new CivilizationCardPlace(deck, 3, players));
-        locations.put(Location.CIVILISATION_CARD4, new CivilizationCardPlace(deck, 4, players));
+        locations.put(Location.BUILDING_TILE1, new BuildingTile(get(buildings, 0)));
+        locations.put(Location.BUILDING_TILE2, new BuildingTile(get(buildings, 1)));
+        locations.put(Location.BUILDING_TILE3, new BuildingTile(get(buildings, 2)));
+        locations.put(Location.BUILDING_TILE4, new BuildingTile(get(buildings, 3)));
+        var card1 = new CivilizationCardPlace(deck, 1, players);
+        locations.put(Location.CIVILISATION_CARD1, card1);
+        var card2 = new CivilizationCardPlace(deck, 2, players);
+        locations.put(Location.CIVILISATION_CARD2, card2);
+        var card3 = new CivilizationCardPlace(deck, 3, players);
+        locations.put(Location.CIVILISATION_CARD3, card3);
+        var card4 = new CivilizationCardPlace(deck, 4, players);
+        locations.put(Location.CIVILISATION_CARD4, card4);
+        card4.setNextSlot(card3);
+        card3.setNextSlot(card2);
+        card2.setNextSlot(card1);
+    }
+
+    public InterfaceFigureLocationInternal getLocation(Location location) {
+        return locations.get(location);
+    }
+
+    private Stack<Building> get(ArrayList<Stack<Building>> in, int index) {
+        try {
+            return in.get(index);
+        } catch (IndexOutOfBoundsException e) {
+            return new Stack<>();
+        }
     }
 
     /**

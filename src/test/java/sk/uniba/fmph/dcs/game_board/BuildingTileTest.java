@@ -6,6 +6,7 @@ import sk.uniba.fmph.dcs.player_board.PlayerBoardGameBoardFacade;
 import sk.uniba.fmph.dcs.stone_age.*;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 import static org.junit.Assert.*;
 
@@ -15,7 +16,9 @@ public class BuildingTileTest {
     public void test_placeFigures() {
         var resources = new ArrayList<Effect>();
         resources.add(Effect.WOOD);
-        var t = new BuildingTile(new SimpleBuilding(resources));
+        var buildingStack = new Stack<Building>();
+        buildingStack.push(new SimpleBuilding(resources));
+        var t = new BuildingTile(buildingStack);
         Player player1 = new Player(new PlayerOrder(1, 1), null);
         Player player2 = new Player(new PlayerOrder(2, 2), null);
         var ret = t.placeFigures(player1, 2);
@@ -32,7 +35,9 @@ public class BuildingTileTest {
     public void test_makeAction() {
         var resources = new ArrayList<Effect>();
         resources.add(Effect.WOOD);
-        var t = new BuildingTile(new SimpleBuilding(resources));
+        var buildingStack = new Stack<Building>();
+        buildingStack.push(new SimpleBuilding(resources));
+        var t = new BuildingTile(buildingStack);
         Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
         Player player2 = new Player(new PlayerOrder(2, 2), new PlayerBoardGameBoardFacade(new PlayerBoard()));
         t.placeFigures(player1, 1);
@@ -48,7 +53,9 @@ public class BuildingTileTest {
     public void test_tryToMakeAction_PlayerPresent() {
         var resources = new ArrayList<Effect>();
         resources.add(Effect.WOOD);
-        var t = new BuildingTile(new SimpleBuilding(resources));
+        var buildingStack = new Stack<Building>();
+        buildingStack.push(new SimpleBuilding(resources));
+        var t = new BuildingTile(buildingStack);
         Player player1 = new Player(new PlayerOrder(1, 1), new PlayerBoardGameBoardFacade(new PlayerBoard()));
         t.placeFigures(player1, 1);
         var ret = t.tryToMakeAction(player1);
@@ -59,7 +66,9 @@ public class BuildingTileTest {
     public void test_tryToMakeAction_PlayerAbsent() {
         var resources = new ArrayList<Effect>();
         resources.add(Effect.WOOD);
-        var t = new BuildingTile(new SimpleBuilding(resources));
+        var buildingStack = new Stack<Building>();
+        buildingStack.push(new SimpleBuilding(resources));
+        var t = new BuildingTile(buildingStack);
         Player player1 = new Player(new PlayerOrder(1, 1), null);
         var ret = t.tryToMakeAction(player1);
         assertEquals(HasAction.NO_ACTION_POSSIBLE, ret);

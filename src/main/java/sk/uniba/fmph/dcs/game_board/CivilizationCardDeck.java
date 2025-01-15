@@ -9,6 +9,7 @@ public final class CivilizationCardDeck {
     private Queue<CivilisationCard> queue;
 
     public CivilizationCardDeck(final ArrayList<CivilisationCard> cards) {
+        queue = new LinkedList<>();
         Collections.shuffle(cards);
         for (var c : cards) {
             queue.add(c);
