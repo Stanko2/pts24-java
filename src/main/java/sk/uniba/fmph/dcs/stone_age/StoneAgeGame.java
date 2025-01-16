@@ -51,7 +51,7 @@ public final class StoneAgeGame implements InterfaceStoneAgeGame {
         if (!players.containsKey(playerId)) {
             return false;
         }
-        boolean result = phaseController.makeAction(players.get(playerId), location, desiredResources, usedResources); //Todo is this the correct way of passing the resources?
+        boolean result = phaseController.makeAction(players.get(playerId), location, usedResources, desiredResources); //Todo is this the correct way of passing the resources?
         notif();
         return result;
     }

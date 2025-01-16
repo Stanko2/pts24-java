@@ -33,7 +33,12 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
      */
     @Override
     public boolean placeFigures(final Player player, final int figureCount) {
-        return tryToPlaceFigures(player, figureCount) != HasAction.NO_ACTION_POSSIBLE;
+        if(tryToPlaceFigures(player, figureCount) != HasAction.NO_ACTION_POSSIBLE) {
+            player.playerBoard().takeFigures(figureCount);
+            figures.put(player.playerOrder(), figureCount);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -49,7 +54,8 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
         if (figures.size() + count >= CAPACITY) {
             return HasAction.NO_ACTION_POSSIBLE;
         }
-        figures.put(player.playerOrder(), count);
+        if (!player.playerBoard().hasFigures(count)) return HasAction.NO_ACTION_POSSIBLE;
+
         return HasAction.WAITING_FOR_PLAYER_ACTION;
     }
 
@@ -118,6 +124,7 @@ public class ResourceSource implements InterfaceFigureLocationInternal {
      */
     @Override
     public boolean newTurn() {
+        figures.clear();
         return false;
     }
 

@@ -115,7 +115,7 @@ public class PlaceOnHutAdaptor implements InterfaceFigureLocationInternal {
      */
     @Override
     public boolean newTurn() {
-        return false;
+        return huts.newTurn();
     }
 
     /**

@@ -113,6 +113,7 @@ public class ToolMakerHutsFields {
             return false;
         }
         player.playerBoard().giveFigure();
+        player.playerBoard().takeFigures(1);
         hutFigures.remove(player.playerOrder());
         return true;
     }
@@ -142,6 +143,7 @@ public class ToolMakerHutsFields {
         if (!canPlaceOnFields(player)) {
             return false;
         }
+        player.playerBoard().takeFigures(1);
         fieldsFigures.add(player.playerOrder());
         return true;
     }
@@ -159,6 +161,7 @@ public class ToolMakerHutsFields {
             return false;
         }
         player.playerBoard().giveEffect(new Effect[] {Effect.FIELD});
+        player.playerBoard().takeFigures(1);
         fieldsFigures.remove(player.playerOrder());
         return true;
     }
@@ -180,6 +183,9 @@ public class ToolMakerHutsFields {
      * @return true if all actions are resolved and next turn can start
      */
     public boolean newTurn() {
+        fieldsFigures.clear();
+        hutFigures.clear();
+        toolMakerFigures.clear();
         return false;
     }
 

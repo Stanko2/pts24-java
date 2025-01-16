@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 import sk.uniba.fmph.dcs.stone_age.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,9 +48,9 @@ public class CivilizationCardPlaceTest {
         when(player.playerOrder()).thenReturn(new PlayerOrder(1,1));
 
 
-        civilizationCardPlace = new CivilizationCardPlace(civilizationCardDeck, 2, List.of(player));
+        civilizationCardPlace = new CivilizationCardPlace(civilizationCardDeck, 2, Map.of(new PlayerOrder(1, 1), player));
         cardIndex = 3;
-        nextCardPlace = new CivilizationCardPlace(civilizationCardDeck, 1, List.of(player));
+        nextCardPlace = new CivilizationCardPlace(civilizationCardDeck, 1, Map.of(new PlayerOrder(1, 1), player));
 
         cardIndex = 0;
         civilizationCardPlace.setNextSlot(nextCardPlace);

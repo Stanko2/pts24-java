@@ -34,16 +34,19 @@ class ResourceSourceTest {
 
     @Test
     void placeFigures_WithinCapacity_ReturnsTrue() {
+        when(mockPlayerBoard.hasFigures(3)).thenReturn(true);
         assertTrue(resourceSource.placeFigures(player, 3));
     }
 
     @Test
     void placeFigures_ExceedsCapacity_ReturnsFalse() {
+        when(mockPlayerBoard.hasFigures(8)).thenReturn(true);
         assertFalse(resourceSource.placeFigures(player, 8));
     }
 
     @Test
     void tryToPlaceFigures_WithinCapacity_ReturnsWaitingForAction() {
+        when(mockPlayerBoard.hasFigures(3)).thenReturn(true);
         assertEquals(
                 HasAction.WAITING_FOR_PLAYER_ACTION,
                 resourceSource.tryToPlaceFigures(player, 3)
@@ -52,6 +55,7 @@ class ResourceSourceTest {
 
     @Test
     void tryToPlaceFigures_ExceedsCapacity_ReturnsNoActionPossible() {
+        when(mockPlayerBoard.hasFigures(8)).thenReturn(true);
         assertEquals(
                 HasAction.NO_ACTION_POSSIBLE,
                 resourceSource.tryToPlaceFigures(player, 8)
@@ -60,6 +64,7 @@ class ResourceSourceTest {
 
     @Test
     void makeAction_WithValidPlayer_ReturnsActionDoneWaitForToolUse() {
+        when(mockPlayerBoard.hasFigures(3)).thenReturn(true);
         resourceSource.placeFigures(player, 3);
 
         assertEquals(
@@ -78,6 +83,7 @@ class ResourceSourceTest {
 
     @Test
     void skipAction_RemovesFiguresAndReturnsTrue() {
+        when(mockPlayerBoard.hasFigures(3)).thenReturn(true);
         resourceSource.placeFigures(player, 3);
 
         assertTrue(resourceSource.skipAction(player));
@@ -93,6 +99,7 @@ class ResourceSourceTest {
             when(mock.canUseTools()).thenReturn(false);
             when(mock.getResult()).thenReturn(9); // Will give 3 wood (9/3)
         })) {
+            when(mockPlayerBoard.hasFigures(3)).thenReturn(true);
             resourceSource.placeFigures(player, 3);
 
             assertEquals(
@@ -109,6 +116,7 @@ class ResourceSourceTest {
         try (MockedConstruction<CurrentThrow> mocked = mockConstruction(CurrentThrow.class, (mock, context)->{
             when(mock.canUseTools()).thenReturn(true);
         })) {
+            when(mockPlayerBoard.hasFigures(3)).thenReturn(true);
             resourceSource.placeFigures(player, 3);
 
             assertEquals(

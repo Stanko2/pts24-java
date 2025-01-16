@@ -21,7 +21,7 @@ public final class BuildingTile implements InterfaceFigureLocationInternal {
      */
     public BuildingTile(final Stack<Building> buildingStack) {
         this.buildingStack = buildingStack;
-        isUsed = buildingStack.empty();
+        isUsed = !buildingStack.empty();
         figures = new ArrayList<>();
     }
 
@@ -38,6 +38,7 @@ public final class BuildingTile implements InterfaceFigureLocationInternal {
         var action = tryToPlaceFigures(player, figureCount);
         if (action == HasAction.WAITING_FOR_PLAYER_ACTION) {
             figures.add(player.playerOrder());
+            player.playerBoard().takeFigures(figureCount);
             return true;
         }
 
@@ -60,6 +61,8 @@ public final class BuildingTile implements InterfaceFigureLocationInternal {
         if (figures.contains(player.playerOrder())) {
             return HasAction.NO_ACTION_POSSIBLE;
         }
+        if (!player.playerBoard().hasFigures(count)) return HasAction.NO_ACTION_POSSIBLE;
+
         return HasAction.WAITING_FOR_PLAYER_ACTION;
     }
 
@@ -98,6 +101,7 @@ public final class BuildingTile implements InterfaceFigureLocationInternal {
      */
     @Override
     public boolean skipAction(final Player player) {
+
         figures.remove(player.playerOrder());
         return true;
     }

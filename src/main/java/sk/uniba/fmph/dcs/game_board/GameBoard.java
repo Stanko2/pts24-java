@@ -1,19 +1,18 @@
 package sk.uniba.fmph.dcs.game_board;
 
 import org.json.JSONObject;
-import sk.uniba.fmph.dcs.stone_age.Effect;
-import sk.uniba.fmph.dcs.stone_age.InterfaceFigureLocation;
-import sk.uniba.fmph.dcs.stone_age.InterfaceGetState;
-import sk.uniba.fmph.dcs.stone_age.Location;
+import sk.uniba.fmph.dcs.stone_age.*;
 
 import java.util.*;
 
 public class GameBoard implements InterfaceGetState {
     private final Map<Location, InterfaceFigureLocationInternal> locations;
     private final CivilizationCardDeck deck;
+    private final Map<PlayerOrder, Player> players;
 
-    public GameBoard(final Collection<Player> players, final ArrayList<Stack<Building>> buildings, final CivilizationCardDeck deck) {
+    public GameBoard(final Map<PlayerOrder, Player> players, final ArrayList<Stack<Building>> buildings, final CivilizationCardDeck deck) {
         ToolMakerHutsFields fields = new ToolMakerHutsFields(players.size());
+        this.players = players;
         locations = new HashMap<>();
         this.deck = deck;
         locations.put(Location.HUT, new PlaceOnHutAdaptor(fields));
@@ -47,7 +46,37 @@ public class GameBoard implements InterfaceGetState {
     public Map<Location, InterfaceFigureLocation> getLocations() {
         var res = new HashMap<Location, InterfaceFigureLocation>();
         for (var x : locations.keySet()) {
-            res.put(x, (InterfaceFigureLocation) locations.get(x));
+            res.put(x, new InterfaceFigureLocation() {
+                @Override
+                public boolean placeFigures(PlayerOrder player, int figureCount) {
+                    return locations.get(x).placeFigures(players.get(player), figureCount);
+                }
+
+                @Override
+                public HasAction tryToPlaceFigures(PlayerOrder player, int count) {
+                    return locations.get(x).tryToPlaceFigures(players.get(player), count);
+                }
+
+                @Override
+                public ActionResult makeAction(PlayerOrder player, Collection<Effect> inputResources, Collection<Effect> outputResources) {
+                    return locations.get(x).makeAction(players.get(player), inputResources.toArray(new Effect[0]), outputResources.toArray(new Effect[0]));
+                }
+
+                @Override
+                public boolean skipAction(PlayerOrder player) {
+                    return locations.get(x).skipAction(players.get(player));
+                }
+
+                @Override
+                public HasAction tryToMakeAction(PlayerOrder player) {
+                    return locations.get(x).tryToMakeAction(players.get(player));
+                }
+
+                @Override
+                public boolean newTurn() {
+                    return locations.get(x).newTurn();
+                }
+            });
         }
         return res;
     }

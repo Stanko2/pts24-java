@@ -3,6 +3,7 @@ package sk.uniba.fmph.dcs.game_board;
 import sk.uniba.fmph.dcs.stone_age.ActionResult;
 import sk.uniba.fmph.dcs.stone_age.Effect;
 import sk.uniba.fmph.dcs.stone_age.HasAction;
+import sk.uniba.fmph.dcs.stone_age.InterfaceFigureLocation;
 
 public interface InterfaceFigureLocationInternal {
     boolean placeFigures(Player player, int figureCount);

@@ -168,7 +168,7 @@ public final class GamePhaseController implements InterfaceGamePhaseController {
         }
     }
 
-    public boolean placeFigures(final PlayerOrder player, final Location location, final int figuresCount) {
+public boolean placeFigures(final PlayerOrder player, final Location location, final int figuresCount) {
         if (!checkPlayersTurn(player)) {
             return false;
         }

@@ -15,14 +15,13 @@ import java.util.List;
 import java.util.Map;
 
 public final class StoneAgeGameFactory {
-    public static StoneAgeGame createStoneAge(int numPlayers) {
+    public static StoneAgeGame createStoneAge(int numPlayers, StoneAgeObservable observable) {
 
         var playerOrders = new HashMap<Integer, PlayerOrder>();
         for (int i = 0; i < numPlayers; i++) {
             playerOrders.put(i, new PlayerOrder(i, numPlayers));
         }
 
-        var observable = new StoneAgeObservable();
         var playerBoardGameBoards = new HashMap<PlayerOrder, PlayerBoardGameBoardFacade>();
         var playerBoards = new HashMap<PlayerOrder, PlayerBoard>();
 
@@ -34,9 +33,9 @@ public final class StoneAgeGameFactory {
 
 
 
-        var players = new ArrayList<Player>();
+        var players = new HashMap<PlayerOrder, Player>();
         for (int i = 0; i < numPlayers; i++) {
-            players.add(new Player(playerOrders.get(i), playerBoardGameBoards.get(i)));
+            players.put(playerOrders.get(i), new Player(playerOrders.get(i), playerBoardGameBoards.get(playerOrders.get(i))));
         }
 
         var buildings = new ArrayList<Building>();

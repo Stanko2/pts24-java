@@ -4,25 +4,22 @@ import org.json.JSONObject;
 import sk.uniba.fmph.dcs.game_phase_controller.GamePhaseController;
 import sk.uniba.fmph.dcs.stone_age.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
     private CivilisationCard card;
     private PlayerOrder figure;
     private final CivilizationCardDeck deck;
     private final int requiredResources;
-    private final List<Player> players;
+    private final Collection<Player> players;
     private CivilizationCardPlace nextSlot;
     private static List<CivilizationCardPlace> instances = new ArrayList<>();
     public static GamePhaseController gamePhaseController;
 
-    public CivilizationCardPlace(final CivilizationCardDeck deck, final int requiredResources, final Collection<Player> players) {
+    public CivilizationCardPlace(final CivilizationCardDeck deck, final int requiredResources, final Map<PlayerOrder, Player> players) {
         this.deck = deck;
         this.requiredResources = requiredResources;
-        this.players = (List<Player>) players;
+        this.players = players.values();
         this.card = deck.getTop().get();
         instances.add(this);
     }
@@ -37,9 +34,10 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
      */
     @Override
     public boolean placeFigures(final Player player, final int figureCount) {
-        if (figure != null) {
+        if (figure != null || figureCount != 1) {
             return false;
         }
+        player.playerBoard().takeFigures(1);
         figure = player.playerOrder();
         return true;
     }
@@ -58,7 +56,10 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
      */
     @Override
     public HasAction tryToPlaceFigures(final Player player, final int count) {
-        if (figure != null) {
+        if (figure != null || count != 1) {
+            return HasAction.NO_ACTION_POSSIBLE;
+        }
+        if (!player.playerBoard().hasFigures(count)) {
             return HasAction.NO_ACTION_POSSIBLE;
         }
         return HasAction.WAITING_FOR_PLAYER_ACTION;
@@ -157,7 +158,7 @@ public class CivilizationCardPlace implements InterfaceFigureLocationInternal {
         for (int i = 0; i < immediateEffect.length; i++) {
             var effect = immediateEffect[i];
             if (effect == ImmediateEffect.ALL_PLAYERS_TAKE_REWARD) {
-                var menu = new RewardMenu(Arrays.stream(toEffects(card.immediateEffect())).toList(), players);
+                var menu = new RewardMenu(Arrays.stream(toEffects(card.immediateEffect())).toList(), players.stream().toList());
                 new AllPlayersTakeReward(menu, gamePhaseController).performEffect(player, outputResources[0]);
                 break;
             } else if (effect == ImmediateEffect.ARBITRARY_RESOURCE) {
