@@ -2,6 +2,7 @@ package sk.uniba.fmph.dcs.game_board;
 
 import org.json.JSONObject;
 import sk.uniba.fmph.dcs.stone_age.Effect;
+import sk.uniba.fmph.dcs.stone_age.InterfaceFigureLocation;
 import sk.uniba.fmph.dcs.stone_age.InterfaceGetState;
 import sk.uniba.fmph.dcs.stone_age.Location;
 
@@ -41,6 +42,14 @@ public class GameBoard implements InterfaceGetState {
 
     public InterfaceFigureLocationInternal getLocation(Location location) {
         return locations.get(location);
+    }
+
+    public Map<Location, InterfaceFigureLocation> getLocations() {
+        var res = new HashMap<Location, InterfaceFigureLocation>();
+        for (var x : locations.keySet()) {
+            res.put(x, (InterfaceFigureLocation) locations.get(x));
+        }
+        return res;
     }
 
     private Stack<Building> get(ArrayList<Stack<Building>> in, int index) {
